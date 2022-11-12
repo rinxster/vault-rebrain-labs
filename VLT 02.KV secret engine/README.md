@@ -11,7 +11,7 @@ ACL: пишем политики — практика в следующем за
 
 ## Подготовка к практике
 Для начала работы с Vault выполните:
-`sudo systemctl restart vault
+`sudo systemctl restart vault`
 
 ## Задание:
 1. Проведите инициализацию кластера с 3 ключами, любые два из которых распечатывают Vault. Сохраните root token в файл /home/user/root_token.
