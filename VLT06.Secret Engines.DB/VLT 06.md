@@ -14,14 +14,15 @@
 * 1. В данном задании Вам предоставляется две машины. На первой установлен Vault, а второй — PostgreSQL и MongoDB.
 
 Логины и пароли для Postgres:
-
+```
 pgadmin : pgpass
 Логины и пароли для Mongo:
 
 mongouser : mongopass
 vault : vaultpass
+```
 
-* 2. Проведите инициализацию кластера с 3 ключами, любые два из которых распечатывают Vault. Сохраните root token в файл /home/user/root_token.
+* 1. Проведите инициализацию кластера с 3 ключами, любые два из которых распечатывают Vault. Сохраните root token в файл /home/user/root_token.
 
 export VAULT_ADDR=https://127.0.0.1:8200 && sudo systemctl restart vault && vault operator init -key-shares=1 -key-threshold=1 >> /home/user/vault_keys
 
@@ -31,7 +32,7 @@ echo "hvs.k1CPvyodLv3jDrWmLzbWMOcf" >> root_token
 
 export VAULT_SKIP_VERITY=true
 
-* 3. Включите SecretEngine database c mount point=database
+* 2. Включите SecretEngine database c mount point=database
 
 https://developer.hashicorp.com/vault/docs/secrets/databases/mongodb
 
@@ -50,28 +51,35 @@ https://developer.hashicorp.com/vault/docs/secrets/databases/mongodb
 
 ```
 
-* 4. Включить AuthMethod userpass с mount point db-users
+* 3. Включить AuthMethod userpass с mount point db-users
+```
 vault auth enable -path="db-users" userpass 
+```
 
 
 
-
-* 5. Создайте пользователя mongo-dev с политикой mongo-dev и паролем password-mongo-dev.
+* 4. Создайте пользователя mongo-dev с политикой mongo-dev и паролем password-mongo-dev.
 ```
 vault write auth/db-users/users/mongo-dev password="password-mongo-dev" policies="mongo-dev" 
 ```
 
-* 6. Создайте пользователя postgres-dev с политикой postgres-dev и паролем password-postgres-dev.
+* 5. Создайте пользователя postgres-dev с политикой postgres-dev и паролем password-postgres-dev.
 ```
 vault write auth/db-users/users/postgres-dev password="password-postgres-dev" policies="postgres-dev"
 ```
-* 7. Сконфигурируйте подключение к MongoDB в mount-point database с названием mongo-dev и следующими параметрами:
+* 6. Сконфигурируйте подключение к MongoDB в mount-point database с названием mongo-dev и следующими параметрами:
 
 connection string - mongodb://{{username}}:{{password}}@[ип_баз_данных]:27017/admin?tls=false
 username - mongouser
 password - mongouser
 allowed roles - mongo-dev-role
-Сконфигурируйте подключение к Postgres в mount-point database с названием postgres-dev и следующими параметрами:
+
+vault write database/config/mongo-dev plugin_name=mongodb-database-plugin \
+allowed_roles="mongo-dev-role" connection_url='mongodb://{{username}}:{{password}}@158.160.9.172:27017/admin?tls=false' \
+username="mongouser" \
+password="mongopass"
+
+* 7. Сконфигурируйте подключение к Postgres в mount-point database с названием postgres-dev и следующими параметрами:
 connection string - postgresql://{{username}}:{{password}}@[ваш_хостнейм_postgresql]:5432/postgres?sslmode=disable
 username - vault
 password - vaultpass
