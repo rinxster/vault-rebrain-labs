@@ -1,6 +1,10 @@
 
 
 
+test
+
+***
+
 **п.1 Скачать репозиторий hydra и зайти в него**
 
 `git clone --branch v1.11.10 --depth 1 https://github.com/ory/hydra.git`
