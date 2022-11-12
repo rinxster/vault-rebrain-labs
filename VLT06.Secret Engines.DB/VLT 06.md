@@ -61,10 +61,10 @@ vault auth enable -path="db-users" userpass
 vault write auth/db-users/users/mongo-dev password="password-mongo-dev" policies="mongo-dev" 
 ```
 
-
 * 6. Создайте пользователя postgres-dev с политикой postgres-dev и паролем password-postgres-dev.
+```
 vault write auth/db-users/users/postgres-dev password="password-postgres-dev" policies="postgres-dev"
-
+```
 * 7. Сконфигурируйте подключение к MongoDB в mount-point database с названием mongo-dev и следующими параметрами:
 
 connection string - mongodb://{{username}}:{{password}}@[ип_баз_данных]:27017/admin?tls=false
