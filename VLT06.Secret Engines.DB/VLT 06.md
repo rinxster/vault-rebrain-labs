@@ -107,11 +107,26 @@ connection string - postgresql://{{username}}:{{password}}@[ваш_хостне�
 username - vault
 password - vaultpass
 allowed roles - postgres-dev-role
+```
+vault write database/config/postgres-dev plugin_name=postgresql-database-plugin \
+connection_url='postgresql://{{username}}:{{password}}@158.160.12.32:5432/postgres?sslmode=disable' \
+allowed_roles='postgres-dev-role' \
+username='vault' \
+password='vaultpass'
+```
+check how it is configured
+```
+vault read database/config/postgres-dev
+```
 
 * 8. Сконфигурируйте роль postgres-dev-role для инстанса postgres-dev
 creation_statements="CREATE ROLE "{{name}}" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; GRANT USAGE ON SCHEMA stage_schema TO "{{name}}"; GRANT SELECT, UPDATE, INSERT ON ALL TABLES IN SCHEMA stage_schema TO "{{name}}";" \
 default_ttl=30m
 max_ttl=1h
+
+```
+
+```
 
 * 9. Сконфигурируйте роль mongo-dev-role для инстанса mongo-dev
 creation-statement = '{ "db": "admin", "roles": [{"role": "readWrite", "db": "dev-app"}] }'
