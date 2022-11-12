@@ -89,18 +89,7 @@ check config after
 vault read database/config/mongo-dev
 
 ```
-How to config role
-```
-vault write database/roles/mongo-dev-role db_name="mongo-dev"
-creation_statements='{ "db": "admin", "roles": [{"role":"readWrite", "db": "vault-db"]'
-default_ttl="30m"
-max_ttl="1h"
-```
-how to check role afterwards
-```
-vault read database/roles/mongo-dev-role
 
-```
 
 * 7. Сконфигурируйте подключение к Postgres в mount-point database с названием postgres-dev и следующими параметрами:
 connection string - postgresql://{{username}}:{{password}}@[ваш_хостнейм_postgresql]:5432/postgres?sslmode=disable
@@ -125,15 +114,45 @@ default_ttl=30m
 max_ttl=1h
 
 ```
+vault write database/roles/postgres-dev-role db_name=postgres-dev \
+creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}';
+GRANT USAGE ON SCHEMA stage_schema TO \"{{name}}\";
+GRANT  SELECT, UPDATE, INSERT ON ALL TABLES IN SCHEMA stage_schema TO \"{{name}}\";" \
+default_ttl=30m \
+max_ttl=1h
+
 
 ```
+
+creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; GRANT USAGE ON SCHEMA stage_schema TO \"{{name}}\"; GRANT SELECT, UPDATE, INSERT ON ALL TABLES IN SCHEMA stage_schema TO \"{{name}}\";" \
 
 * 9. Сконфигурируйте роль mongo-dev-role для инстанса mongo-dev
 creation-statement = '{ "db": "admin", "roles": [{"role": "readWrite", "db": "dev-app"}] }'
 default_ttl=30m
 max_ttl=1h
 
+
+How to config role
+```
+vault write database/roles/mongo-dev-role db_name="mongo-dev" \
+creation_statements='{ "db": "admin", "roles": [{"role":"readWrite", "db": "vault-db"]' \
+default_ttl="30m" \
+max_ttl="1h"
+```
+how to check role afterwards
+```
+vault read database/roles/mongo-dev-role
+
+```
+
 * 10. Напишите политику с именем mongo-dev, которая будет позволять читать креды для mongo с помощью роли mongo-dev-role.
+```
+vault policy write mongo-dev - <<EOF path "database/creds/mongo-dev-role" { capabilities = ["read"] } EOF
+```
 
 * 11. Напишите политику с именем postgres-dev, которая будет позволять читать креды для postgres с помощью роли postgres-dev-role.
 
+```
+vault policy write postgres-dev - <<EOF path "database/creds/postgres-dev-role" { capabilities = ["read"] } EOF
+
+```
