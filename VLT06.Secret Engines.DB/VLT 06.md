@@ -141,7 +141,7 @@ max_ttl=1h
 How to config role
 ```
 vault write database/roles/mongo-dev-role db_name="mongo-dev" \
-creation_statements='{ "db": "admin", "roles": [{"role":"readWrite", "db": "vault-db"]' \
+creation_statements='{"db":"admin","roles":[{"role":"readWrite", "db": "dev-app"}] }' \
 default_ttl="30m" \
 max_ttl="1h"
 ```
