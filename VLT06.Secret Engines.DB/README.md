@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # VLT 06: Secret Engines. DB
 
 Описание:
