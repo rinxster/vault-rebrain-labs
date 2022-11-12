@@ -89,7 +89,18 @@ check config after
 vault read database/config/mongo-dev
 
 ```
+How to config role
+```
+vault write database/roles/mongo-dev-role db_name="mongo-dev"
+creation_statements='{ "db": "admin", "roles": [{"role":"readWrite", "db": "vault-db"]'
+default_ttl="30m"
+max_ttl="1h"
+```
+how to check role afterwards
+```
+vault read database/roles/mongo-dev-role
 
+```
 
 * 7. Сконфигурируйте подключение к Postgres в mount-point database с названием postgres-dev и следующими параметрами:
 connection string - postgresql://{{username}}:{{password}}@[ваш_хостнейм_postgresql]:5432/postgres?sslmode=disable
