@@ -23,6 +23,14 @@ vault : vaultpass
 
 * 2. Проведите инициализацию кластера с 3 ключами, любые два из которых распечатывают Vault. Сохраните root token в файл /home/user/root_token.
 
+export VAULT_ADDR=https://127.0.0.1:8200 && sudo systemctl restart vault && vault operator init -key-shares=1 -key-threshold=1 >> /home/user/vault_keys
+
+touch root_token
+
+echo "hvs.k1CPvyodLv3jDrWmLzbWMOcf" >> root_token
+
+export VAULT_SKIP_VERITY=true
+
 * 3. Включите SecretEngine database c mount point=database
 
 https://developer.hashicorp.com/vault/docs/secrets/databases/mongodb
@@ -30,6 +38,8 @@ https://developer.hashicorp.com/vault/docs/secrets/databases/mongodb
 ```
 
  vault secrets enable -path=database database
+
+ vault secrets enable database
 
  vault write mongodb/config/mongo-test \
       plugin_name=mongodb-database-plugin \
@@ -41,12 +51,19 @@ https://developer.hashicorp.com/vault/docs/secrets/databases/mongodb
 ```
 
 * 4. Включить AuthMethod userpass с mount point db-users
+vault auth enable -path="db-users" userpass 
+
 
 
 
 * 5. Создайте пользователя mongo-dev с политикой mongo-dev и паролем password-mongo-dev.
+```
+vault write auth/db-users/users/mongo-dev password="password-mongo-dev" policies="mongo-dev" 
+```
+
 
 * 6. Создайте пользователя postgres-dev с политикой postgres-dev и паролем password-postgres-dev.
+vault write auth/db-users/users/postgres-dev password="password-postgres-dev" policies="postgres-dev"
 
 * 7. Сконфигурируйте подключение к MongoDB в mount-point database с названием mongo-dev и следующими параметрами:
 
