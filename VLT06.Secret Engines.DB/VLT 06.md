@@ -124,7 +124,13 @@ max_ttl=1h
 
 ```
 
-creation_statements="CREATE ROLE \"{{name}}\" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; GRANT USAGE ON SCHEMA stage_schema TO \"{{name}}\"; GRANT SELECT, UPDATE, INSERT ON ALL TABLES IN SCHEMA stage_schema TO \"{{name}}\";" \
+how to check role afterwards
+```
+vault read database/roles/postgres-dev-role
+
+```
+
+
 
 * 9. Сконфигурируйте роль mongo-dev-role для инстанса mongo-dev
 creation-statement = '{ "db": "admin", "roles": [{"role": "readWrite", "db": "dev-app"}] }'
@@ -146,13 +152,28 @@ vault read database/roles/mongo-dev-role
 ```
 
 * 10. Напишите политику с именем mongo-dev, которая будет позволять читать креды для mongo с помощью роли mongo-dev-role.
+
 ```
-vault policy write mongo-dev - <<EOF path "database/creds/mongo-dev-role" { capabilities = ["read"] } EOF
+
+ vault policy write -tls-skip-verify mongo-dev - << EOF
+
+path "database/creds/mongo-dev-role" {
+  capabilities = ["read"]
+}
+
+EOF
 ```
 
 * 11. Напишите политику с именем postgres-dev, которая будет позволять читать креды для postgres с помощью роли postgres-dev-role.
 
-```
-vault policy write postgres-dev - <<EOF path "database/creds/postgres-dev-role" { capabilities = ["read"] } EOF
 
+```
+
+ vault policy write -tls-skip-verify postgres-dev - << EOF
+
+path "database/creds/postgres-dev-role" {
+  capabilities = ["read"]
+}
+
+EOF
 ```
