@@ -16,6 +16,9 @@
 Логины и пароли для Postgres:
 ```
 pgadmin : pgpass
+
+```
+```
 Логины и пароли для Mongo:
 
 mongouser : mongopass
@@ -28,7 +31,7 @@ export VAULT_ADDR=https://127.0.0.1:8200 && sudo systemctl restart vault && vaul
 
 touch root_token
 
-echo "hvs.k1CPvyodLv3jDrWmLzbWMOcf" >> root_token
+echo "hvs.7xSKW0pn2rRCRCPyxEApGt0L" >> root_token
 
 export VAULT_SKIP_VERITY=true
 
@@ -74,10 +77,19 @@ username - mongouser
 password - mongouser
 allowed roles - mongo-dev-role
 
+```
+
 vault write database/config/mongo-dev plugin_name=mongodb-database-plugin \
-allowed_roles="mongo-dev-role" connection_url='mongodb://{{username}}:{{password}}@158.160.9.172:27017/admin?tls=false' \
+allowed_roles="mongo-dev-role" connection_url='mongodb://{{username}}:{{password}}@158.160.12.32:27017/admin?tls=false' \
 username="mongouser" \
 password="mongopass"
+```
+check config after
+```
+vault read database/config/mongo-dev
+
+```
+
 
 * 7. Сконфигурируйте подключение к Postgres в mount-point database с названием postgres-dev и следующими параметрами:
 connection string - postgresql://{{username}}:{{password}}@[ваш_хостнейм_postgresql]:5432/postgres?sslmode=disable
