@@ -12,7 +12,7 @@
 Также для Вашего удобства прикладываем презентацию к вебинару.
 
 Задание:
-## 1. В данном задании Вам предоставляется две машины. На первой установлен Vault, а второй — PostgreSQL и MongoDB.
+## 0. В данном задании Вам предоставляется две машины. На первой установлен Vault, а второй — PostgreSQL и MongoDB.
 
 Логины и пароли для Postgres:
 ```
@@ -26,7 +26,7 @@ mongouser : mongopass
 vault : vaultpass
 ```
 
-* 1. Проведите инициализацию кластера с 3 ключами, любые два из которых распечатывают Vault. Сохраните root token в файл /home/user/root_token.
+## 1. Проведите инициализацию кластера с 3 ключами, любые два из которых распечатывают Vault. Сохраните root token в файл /home/user/root_token.
 
 export VAULT_ADDR=https://127.0.0.1:8200 && sudo systemctl restart vault && vault operator init -key-shares=1 -key-threshold=1 >> /home/user/vault_keys
 
@@ -36,7 +36,7 @@ echo "hvs.7xSKW0pn2rRCRCPyxEApGt0L" >> root_token
 
 export VAULT_SKIP_VERITY=true
 
-* 2. Включите SecretEngine database c mount point=database
+## 2. Включите SecretEngine database c mount point=database
 
 https://developer.hashicorp.com/vault/docs/secrets/databases/mongodb
 
@@ -55,23 +55,23 @@ https://developer.hashicorp.com/vault/docs/secrets/databases/mongodb
 
 ```
 
-* 3. Включить AuthMethod userpass с mount point db-users
+## 3. Включить AuthMethod userpass с mount point db-users
 ```
 vault auth enable -path="db-users" userpass 
 ```
 
 
 
-* 4. Создайте пользователя mongo-dev с политикой mongo-dev и паролем password-mongo-dev.
+## 4. Создайте пользователя mongo-dev с политикой mongo-dev и паролем password-mongo-dev.
 ```
 vault write auth/db-users/users/mongo-dev password="password-mongo-dev" policies="mongo-dev" 
 ```
 
-* 5. Создайте пользователя postgres-dev с политикой postgres-dev и паролем password-postgres-dev.
+## 5. Создайте пользователя postgres-dev с политикой postgres-dev и паролем password-postgres-dev.
 ```
 vault write auth/db-users/users/postgres-dev password="password-postgres-dev" policies="postgres-dev"
 ```
-* 6. Сконфигурируйте подключение к MongoDB в mount-point database с названием mongo-dev и следующими параметрами:
+## 6. Сконфигурируйте подключение к MongoDB в mount-point database с названием mongo-dev и следующими параметрами:
 
 connection string - mongodb://{{username}}:{{password}}@[ип_баз_данных]:27017/admin?tls=false
 username - mongouser
@@ -92,7 +92,7 @@ vault read database/config/mongo-dev
 ```
 
 
-* 7. Сконфигурируйте подключение к Postgres в mount-point database с названием postgres-dev и следующими параметрами:
+## 7. Сконфигурируйте подключение к Postgres в mount-point database с названием postgres-dev и следующими параметрами:
 connection string - postgresql://{{username}}:{{password}}@[ваш_хостнейм_postgresql]:5432/postgres?sslmode=disable
 username - vault
 password - vaultpass
@@ -109,7 +109,7 @@ check how it is configured
 vault read database/config/postgres-dev
 ```
 
-* 8. Сконфигурируйте роль postgres-dev-role для инстанса postgres-dev
+## 8. Сконфигурируйте роль postgres-dev-role для инстанса postgres-dev
 creation_statements="CREATE ROLE "{{name}}" WITH LOGIN PASSWORD '{{password}}' VALID UNTIL '{{expiration}}'; GRANT USAGE ON SCHEMA stage_schema TO "{{name}}"; GRANT SELECT, UPDATE, INSERT ON ALL TABLES IN SCHEMA stage_schema TO "{{name}}";" \
 default_ttl=30m
 max_ttl=1h
@@ -133,7 +133,7 @@ vault read database/roles/postgres-dev-role
 
 
 
-* 9. Сконфигурируйте роль mongo-dev-role для инстанса mongo-dev
+## 9. Сконфигурируйте роль mongo-dev-role для инстанса mongo-dev
 creation-statement = '{ "db": "admin", "roles": [{"role": "readWrite", "db": "dev-app"}] }'
 default_ttl=30m
 max_ttl=1h
@@ -152,7 +152,7 @@ vault read database/roles/mongo-dev-role
 
 ```
 
-* 10. Напишите политику с именем mongo-dev, которая будет позволять читать креды для mongo с помощью роли mongo-dev-role.
+## 10. Напишите политику с именем mongo-dev, которая будет позволять читать креды для mongo с помощью роли mongo-dev-role.
 
 ```
 
@@ -165,7 +165,7 @@ path "database/creds/mongo-dev-role" {
 EOF
 ```
 
-* 11. Напишите политику с именем postgres-dev, которая будет позволять читать креды для postgres с помощью роли postgres-dev-role.
+## 11. Напишите политику с именем postgres-dev, которая будет позволять читать креды для postgres с помощью роли postgres-dev-role.
 
 
 ```
