@@ -150,7 +150,7 @@ storage "raft" {
   }
 }
 ```
-Создайте docker-compose файл по пути /home/user/docker-compose.yml.
+4. Создайте docker-compose файл по пути /home/user/docker-compose.yml.
 ```
 version: '3'
 services:
@@ -199,13 +199,14 @@ services:
       - "8500:8200/tcp"
     container_name: vault-node3
 ```
-Запустите кластер командой docker-compose -f /home/user/docker-compose.yml.
+5. Запустите кластер командой docker-compose -f /home/user/docker-compose.yml.
 
-Произведите инициализацию первой ноды с любым количеством ключей и unseal кластера. Cохраните рут токен в файл /home/user/root_token. Для нод используется следующий мапинг портом на localhost:
-
+6. Произведите инициализацию первой ноды с любым количеством ключей и unseal кластера. Cохраните рут токен в файл /home/user/root_token. Для нод используется следующий мапинг портом на localhost:
+```
 https://127.0.0.1:8300 - первая нода
 https://127.0.0.1:8400 - вторая нода
 https://127.0.0.1:8500 - третья нода
-Выполните unseal второй и третьей ноды.
+```
+7. Выполните unseal второй и третьей ноды.
 
-С помощью команды vault operator raft list-peers убедитесь, что кластер собран и выбран лидер.
+8. С помощью команды vault operator raft list-peers убедитесь, что кластер собран и выбран лидер.
