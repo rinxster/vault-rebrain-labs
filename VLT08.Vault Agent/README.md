@@ -148,7 +148,7 @@ EOF
 ```
 vault policy write -tls-skip-verify agent-read-only - << EOF
 
-path "kv-v2/agent-test" {
+path "kv-v2/data/agent-test" {
   capabilities = ["read"]
 }
 
@@ -175,11 +175,15 @@ vault write auth/approle/role/agent-role policies="agent-read-only" \
 
 7. Сделайте шаблон, который будет выводить содержимое ключа password из секрета kv-v2/agent-test. Шаблон сохраните в файл /home/user/template.ctmpl
 
-touch /home/user/template.ctmpl
+```
+tee /home/user/template.ctmpl <<EOF
 
 {{ with secret "kv-v2/agent-test" }}
 {{ .Data.data.password }}
 {{ end }}
+
+EOF
+```
 
 8. Сконфигурируйте и запустите vault agent. Он должен использовать AppRole для автоматической авторизации, сохраняя токен в файл /tmp/.vault-token, и записывать содержимое ключа password из секрета kv-v2/agent-test в файл /home/user/secret_auto_update, используя ранее созданный шаблон.
 
@@ -188,7 +192,48 @@ touch /home/user/template.ctmpl
 template_config {
   static_secret_render_interval = "1s"
 }
+
 !!! ВНИМАНИЕ !!! При отправке задания на проверку vault agent должен быть активирован!
 
-3
-0
+
+```
+tee ./agent-config.hcl <<EOF
+
+vault {
+  address = "https://127.0.0.1:8200"
+}
+
+auto_auth {
+  method {
+    type = "approle"
+
+    config = {
+      role_id_file_path = "/home/user/role_id"
+      secret_id_file_path = "/home/user/secret_id"
+      remove_secret_id_file_after_reading = false
+    }
+  }
+
+  sink {
+    type = "file"
+
+    config = {
+      path = "/tmp/.vault-token"
+    }
+  }
+}
+
+template {
+  source = "/home/user/template.ctmpl"
+  destination = "home/user/secret_auto_update"
+}
+
+template_config {
+  static_secret_render_interval = "1s"
+}
+EOF
+
+```
+далее запускаем агент
+
+`vault agent -config ./agent-config.hcl`
