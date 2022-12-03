@@ -140,16 +140,46 @@ EOF
 
 3. Создайте секрет kv-v2/agent-test. Запишите в него данные password=s$cr3t.
 
-vault kv put kv-v2/agent-test password=s$cr3t
+`vault kv put kv-v2/agent-test password=s$cr3t`
 
 
 4. Сделайте политику agent-read-only, которая разрешает ТОЛЬКО ЧТЕНИЕ секрета kv-v2/agent-test.
 
-5. оздайте AppRole с именем agent-role c политикой agent-read-only. Время жизни secret id — 1 час, время жизни токена - 1 минута, максимальное время жизни - 10 минут.
+```
+vault policy write -tls-skip-verify agent-read-only - << EOF
+
+path "kv-v2/agent-test" {
+  capabilities = ["read"]
+}
+
+EOF
+```
+
+5. Создайте AppRole с именем agent-role c политикой agent-read-only. Время жизни secret id — 1 час, время жизни токена - 1 минута, максимальное время жизни - 10 минут.
+
+```
+vault auth enable approle
+
+vault write auth/approle/role/agent-role policies="agent-read-only" \
+    secret_id_ttl=1h \
+    token_ttl=1m \
+    token_max_ttl=10m
+```
 
 6. Получите AppRole secret id и role id и запишите их в файлы /home/user/secret_id и /home/user/role_id соответственно.
 
+`vault read auth/approle/role/agent-role/role-id`
+
+`vault write -f auth/approle/role/agent-role/secret-id`
+
+
 7. Сделайте шаблон, который будет выводить содержимое ключа password из секрета kv-v2/agent-test. Шаблон сохраните в файл /home/user/template.ctmpl
+
+touch /home/user/template.ctmpl
+
+{{ with secret "kv-v2/agent-test" }}
+{{ .Data.data.password }}
+{{ end }}
 
 8. Сконфигурируйте и запустите vault agent. Он должен использовать AppRole для автоматической авторизации, сохраняя токен в файл /tmp/.vault-token, и записывать содержимое ключа password из секрета kv-v2/agent-test в файл /home/user/secret_auto_update, используя ранее созданный шаблон.
 
