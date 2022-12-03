@@ -14,17 +14,13 @@
 
 `export VAULT_SKIP_VERIFY=true`
 
-`vault operator init -key-shares=3 -key-threshold=2`
-
-`vault operator unseal`
-
-`export VAULT_TOKEN=`
-
 `export VAULT_ADDR=https://127.0.0.1:8200 && sudo systemctl restart vault && vault operator init -key-shares=3 -key-threshold=2 >> /home/user/vault_keys`
 
 `touch root_token`
 
 `echo "<put your token here from vault_keys file created above>" >> root_token`
+
+`vault operator unseal`
 
 
 2. Включите движок KVv2 по пути kv-v2.
