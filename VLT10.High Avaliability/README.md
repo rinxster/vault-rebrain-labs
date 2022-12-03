@@ -16,7 +16,7 @@
 /vault/storage/node2
 /vault/storage/node3
 ```
-В каталог /vault/cert поместите сертификаты:
+2. В каталог /vault/cert поместите сертификаты:
 ca.pem:
 
 ```
@@ -104,11 +104,11 @@ eQrPuLC0mLb76plezBzVLBkyVDXH5w5TEhTEq4pWmkVd6cr+oYNdTSSKIM85dxxk
 Hdmp7MA1TnlktiuxVvRblZkUWkaLHRvK8AIyoGluHaeHTmTlVzb9tA==
 -----END RSA PRIVATE KEY-----
 ```
-Создайте конфигурацию для каждой ноды Vault HA raft storage.
-Для адресов нод в кластере используйте следующие dns-имена: vault-node1, vault-node2, vault-node3.
-storage должен находиться в каталоге /vault/storage
-Используйте ранее созданные сертификаты для настройки TLS для нод в кластере
-Файл конфигурации разместите по адресу /vault/config/vault-node[номер-ноды].hcl
+3. Создайте конфигурацию для каждой ноды Vault HA raft storage.
+- Для адресов нод в кластере используйте следующие dns-имена: vault-node1, vault-node2, vault-node3.
+- storage должен находиться в каталоге /vault/storage
+- Используйте ранее созданные сертификаты для настройки TLS для нод в кластере
+- Файл конфигурации разместите по адресу /vault/config/vault-node[номер-ноды].hcl
 Пример конфигурации для первой ноды:
 ```
 ui = true
