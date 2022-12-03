@@ -82,14 +82,16 @@ EOF
 8. Сконфигурируйте и запустите vault agent. Он должен использовать AppRole для автоматической авторизации, сохраняя токен в файл /tmp/.vault-token, и записывать содержимое ключа password из секрета kv-v2/agent-test в файл /home/user/secret_auto_update, используя ранее созданный шаблон.
 
 Используйте следюущий template_config:
-
+```
 template_config {
   static_secret_render_interval = "1s"
 }
-
+```
 !!! ВНИМАНИЕ !!! При отправке задания на проверку vault agent должен быть активирован!
 
+Решение:
 
+Готовим кониг и сохраняем в файл.
 ```
 tee ./agent-config.hcl <<EOF
 
@@ -128,6 +130,6 @@ template_config {
 EOF
 
 ```
-далее запускаем агент
+далее запускаем агент:
 
 `vault agent -config ./agent-config.hcl`
