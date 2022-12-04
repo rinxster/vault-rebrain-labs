@@ -261,6 +261,9 @@ path "auth/token/renew-self" {
     }' | vault policy write cert-issue-policy -
 
 https://medium.com/hashicorp-engineering/pki-as-a-service-with-hashicorp-vault-a8d075ece9a
+https://www.ibm.com/docs/en/cloud-private/3.2.0?topic=manager-using-vault-issue-certificates
+
+https://www.hashicorp.com/blog/certificate-management-with-vault
 
 6.Выпустите токен с этой политикой (срок жизни и другие параметры не важны) и запишите токен в файл /home/user/cert_issuer_token
 
