@@ -175,12 +175,12 @@ CxzAa39lzTqcFdriANUiAOsf37VHkTNFE39b0A6/rIhUW44vOkTNZH6MniCIRqgw
 GFlCoJYukGBTqgMg+P/5OHXkQEY/rQKqpCEcf6e64yZMb6TjIcUD
 -----END RSA PRIVATE KEY-----
 EOF
-
 `sudo chmod 644 /opt/certs/bundle.pem`
 
-`sudo systemctl restart vault`
 
-`vault -autocomplete-install`
+
+1. Проведите инициализацию кластера с 3 ключами, любые два из которых распечатывают Vault. Сохраните root token в файл /home/user/root_token.
+
 
 `export VAULT_SKIP_VERIFY=true && export VAULT_ADDR=https://127.0.0.1:8200 && sudo systemctl restart vault && vault operator init -key-shares=1 -key-threshold=1 >> /home/user/vault_keys`
 
@@ -188,7 +188,7 @@ EOF
 
 `vault operator unseal`
 
-`export VAULT_TOKEN="hvs.k0BzsDoTeG39pk3KoErIhsbU" && echo $VAULT_TOKEN > /home/user/root_token`
+`export VAULT_TOKEN="hvs.IQAqzl5PdqRt9Qw0oL2y8k2y" && echo $VAULT_TOKEN > /home/user/root_token`
 
 
 
@@ -233,32 +233,37 @@ allow_bare_domains=true
 //   } 
 //EOF`
 
-echo 'path "rebrain-pki/*" {
-  capabilities = ["list", "sudo", "read","create","update"]
+//echo 'path "rebrain-pki/*" {
+//  capabilities = ["list", "sudo", "read","create","update"]
+//}' | vault policy write cert-issue-policy -
+
+
+echo 'path "rebrain-pki/issue/local-certs" {
+  capabilities = ["create", "update"]
 }' | vault policy write cert-issue-policy -
 
 
-echo 'path "rebrain-pki/issue/*" {
-  capabilities = ["list", "sudo", "read","create","update"]
-}
-path "rebrain-pki/certs" {
-  capabilities = ["list", "sudo", "read","create","update"]
-}
-path "rebrain-pki/revoke" {
-      capabilities = ["create", "update"]
-    }
-path "rebrain-pki/tidy" {
-      capabilities = ["create", "update"]
-    }
-path "rebrain-pki/cert/ca" {
-      capabilities = ["read"]
-    }
-path "auth/token/renew" {
-      capabilities = ["update"]
-    }
-path "auth/token/renew-self" {
-      capabilities = ["update"]
-    }' | vault policy write cert-issue-policy -
+//echo 'path "rebrain-pki/issue/*" {
+//  capabilities = ["list", "sudo", "read","create","update"]
+//}
+//path "rebrain-pki/certs" {
+//  capabilities = ["list", "sudo", "read","create","update"]
+//}
+//path "rebrain-pki/revoke" {
+//      capabilities = ["create", "update"]
+//    }
+//path "rebrain-pki/tidy" {
+//      capabilities = ["create", "update"]
+//    }
+//path "rebrain-pki/cert/ca" {
+//      capabilities = ["read"]
+//    }
+//path "auth/token/renew" {
+//      capabilities = ["update"]
+//    }
+//path "auth/token/renew-self" {
+//      capabilities = ["update"]
+//    }' | vault policy write cert-issue-policy -
 
 https://medium.com/hashicorp-engineering/pki-as-a-service-with-hashicorp-vault-a8d075ece9a
 https://www.ibm.com/docs/en/cloud-private/3.2.0?topic=manager-using-vault-issue-certificates
@@ -269,7 +274,7 @@ https://www.hashicorp.com/blog/certificate-management-with-vault
 
 `vault token create -policy=cert-issue-policy`
 
-`echo hvs.CAESICqlpF1oVzTrFh_yo0B2SHJmAYb6yL-gGwY7w2ctCJ68Gh4KHGh2cy5CS0w1ckxQRzVSTzIxQTZiQlR1RUFvNU4 > /home/user/cert_issuer_token`
+`echo hvs.CAESID0z7vxBXFezHQkWozfNlJiKOipjA6boiNi57_eMviYOGh4KHGh2cy5Ld1JvME9MZ3FPbE0xTmJIVE1TUnYzMU4 > /home/user/cert_issuer_token`
 
 7. Выпустите сертификат с common_name="rebrain-vault.local" alt_names="random.rebrain-vault.local". Сохраните его в файл /home/user/cert.pem
 
@@ -282,7 +287,7 @@ https://www.hashicorp.com/blog/certificate-management-with-vault
 `CERT > /home/user/cert.pem` 
 
  curl \
-    --header "X-Vault-Token: hvs.CAESICqlpF1oVzTrFh_yo0B2SHJmAYb6yL-gGwY7w2ctCJ68Gh4KHGh2cy5CS0w1ckxQRzVSTzIxQTZiQlR1RUFvNU4" \
+    --header "X-Vault-Token: hvs.CAESID0z7vxBXFezHQkWozfNlJiKOipjA6boiNi57_eMviYOGh4KHGh2cy5Ld1JvME9MZ3FPbE0xTmJIVE1TUnYzMU4" \
     --request POST \
     --data  '{ "common_name": "rebrain-vault.local", "alt_names": "random.rebrain-vault.local" }' \
     https://127.0.0.1:8200/v1/rebrain-pki/issue/local-certs
