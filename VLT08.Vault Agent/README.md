@@ -92,6 +92,8 @@ template_config {
 ```
 tee ./agent-config.hcl <<EOF
 
+pid_file = "./pidfile"
+
 vault {
   address = "https://127.0.0.1:8200"
 }
