@@ -74,7 +74,7 @@ EOF
 
 
 
-1. Проведите инициализацию кластера с 3 ключами, любые два из которых распечатывают Vault. Сохраните root token в файл /home/user/root_token.
+### 1. Проведите инициализацию кластера с 3 ключами, любые два из которых распечатывают Vault. Сохраните root token в файл /home/user/root_token.
 
 
 `export VAULT_SKIP_VERIFY=true && export VAULT_ADDR=https://127.0.0.1:8200 && sudo systemctl restart vault && vault operator init -key-shares=2 -key-threshold=2 >> /home/user/vault_keys`
