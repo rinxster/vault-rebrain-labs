@@ -87,23 +87,19 @@ EOF
 
 
 
-2.Включите PKI SecretEngine по пути rebrain-pki/ с максимальным сроком жизни сертификата 1 год (8760 часов)
+### 2. Включите PKI SecretEngine по пути rebrain-pki/ с максимальным сроком жизни сертификата 1 год (8760 часов)
 
 `vault secrets enable -path=rebrain-pki -max-lease-ttl=8760h pki`
 
-3.Импортируйте ранее созданный bundle.pem в секрет rebrain-pki/config/ca.
+### 3.Импортируйте ранее созданный bundle.pem в секрет rebrain-pki/config/ca.
 
-
-
-// `vault write rebrain-pki/import/bundle pem_bundle=@/opt/certs/bundle.pem`
-
-vault write rebrain-pki/config/urls issuing_certificates="http://127.0.0.1:8200/v1/pki/ca" crl_distribution_point="http://127.0.0.1:8200/v1/pki/crl"
+`vault write rebrain-pki/config/urls issuing_certificates="http://127.0.0.1:8200/v1/pki/ca" crl_distribution_point="http://127.0.0.1:8200/v1/pki/crl"`
 
 `vault write rebrain-pki/config/ca pem_bundle=@/opt/certs/bundle.pem`
 
 https://gruchalski.com/posts/2020-09-09-multi-tenant-vault-pki-with-custom-root-pem-bundle/
 
-4.Создайте роль с именем local-certs, которая разрешит выпуск сертификатов сроком жизни 24 часа для всех поддоменов домена rebrain-vault.local (включая сам этот домен). Роль также должна ЗАПРЕЩАТЬ выпускать сертификаты для localhost, IP-адресов, а также wildcard-сертификаты.
+### 4. Создайте роль с именем local-certs, которая разрешит выпуск сертификатов сроком жизни 24 часа для всех поддоменов домена rebrain-vault.local (включая сам этот домен). Роль также должна ЗАПРЕЩАТЬ выпускать сертификаты для localhost, IP-адресов, а также wildcard-сертификаты.
 ```
 vault write rebrain-pki/roles/local-certs \
 allowed_domains="rebrain-vault.local" \
@@ -121,7 +117,7 @@ allow_client=true \
 allow_any_name=true \
 allow_bare_domains=true
 ```
-5.Сделайте политику с именем cert-issue-policy, которая позволяет выпускать сертификаты с ролью local-certs
+### 5. Сделайте политику с именем cert-issue-policy, которая позволяет выпускать сертификаты с ролью local-certs
 
 ```
 echo 'path "rebrain-pki/issue/local-certs" {
@@ -133,13 +129,13 @@ https://medium.com/hashicorp-engineering/pki-as-a-service-with-hashicorp-vault-a
 https://www.ibm.com/docs/en/cloud-private/3.2.0?topic=manager-using-vault-issue-certificates
 https://www.hashicorp.com/blog/certificate-management-with-vault
 
-6.Выпустите токен с этой политикой (срок жизни и другие параметры не важны) и запишите токен в файл /home/user/cert_issuer_token
+### 6. Выпустите токен с этой политикой (срок жизни и другие параметры не важны) и запишите токен в файл /home/user/cert_issuer_token
 
 `vault token create -policy=cert-issue-policy`
 
 `echo hvs.CAESIOxJPrIFO167tlxHvJJJFa712hDqBm8kYOW8oAP75AiXGh4KHGh2cy5xaVplRVlCVWhzbUE4bnk5a2tlSVF2Sk0 > /home/user/cert_issuer_token`
 
-7. Выпустите сертификат с common_name="rebrain-vault.local" alt_names="random.rebrain-vault.local". Сохраните его в файл /home/user/cert.pem
+### 7. Выпустите сертификат с common_name="rebrain-vault.local" alt_names="random.rebrain-vault.local". Сохраните его в файл /home/user/cert.pem
 
 выпускаем сертификат командой curl:
 
@@ -156,7 +152,7 @@ https://www.hashicorp.com/blog/certificate-management-with-vault
 `CERT > /home/user/cert.pem` 
 
 
-8.Запустите dev-server Vault на 9200/TCP порту в бэкграунде любым удобным способом (screen, nohup и т.д.). Используйте команду vault server -dev -dev-root-token-id=1 -dev-listen-address=0.0.0.0:9200. Она запустит dev-сервер с root-токеном "1", который необходимо использовать для дальнейшей настройки.
+### 8.Запустите dev-server Vault на 9200/TCP порту в бэкграунде любым удобным способом (screen, nohup и т.д.). Используйте команду vault server -dev -dev-root-token-id=1 -dev-listen-address=0.0.0.0:9200. Она запустит dev-сервер с root-токеном "1", который необходимо использовать для дальнейшей настройки.
 
 в отдельном окне открываем доп сессию и в ней делаем команде
 `vault server -dev -dev-root-token-id=1 -dev-listen-address=0.0.0.0:9200`
@@ -165,7 +161,7 @@ https://www.hashicorp.com/blog/certificate-management-with-vault
 
 `export VAULT_ADDR="http://127.0.0.1:9200" && export VAULT_TOKEN=1`
 
-9. В dev-сервере смонтируйте SecretEngine Transit (не забудьте поменять env VAULT_ADDR и VAULT_TOKEN) как transit-autounseal и создайте ключ vault-autounseal.
+### 9. В dev-сервере смонтируйте SecretEngine Transit (не забудьте поменять env VAULT_ADDR и VAULT_TOKEN) как transit-autounseal и создайте ключ vault-autounseal.
 
 монтируем транзит:
 `vault secrets enable -path=transit-autounseal transit`
@@ -173,7 +169,7 @@ https://www.hashicorp.com/blog/certificate-management-with-vault
 создаём ключ:
 `vault write -f transit-autounseal/keys/vault-autounseal`
 
-10. В dev-сервере создайте политику transit-autounseal со следующим содержимым:
+### 10. В dev-сервере создайте политику transit-autounseal со следующим содержимым:
 ```
 path "transit-autounseal/encrypt/vault-autounseal" {
    capabilities = [ "update" ]
@@ -196,11 +192,11 @@ path "transit-autounseal/decrypt/vault-autounseal" {
 
 `vault policy read transit-autounseal`
 
-11. Создайте периодический токен для этой политики с периодом 24 часа.
+### 11. Создайте периодический токен для этой политики с периодом 24 часа.
 
 `vault token create -policy=transit-autounseal -period=24h`
 
-12. Добавьте конфигурацию seal в основной инстанс. Подставьте Ваши значения токена в соотвествующие поля.
+### 12. Добавьте конфигурацию seal в основной инстанс. Подставьте Ваши значения токена в соотвествующие поля.
 ```
 seal "transit" {
   address            = ""
@@ -233,7 +229,7 @@ seal "transit" {
 
 `systemctl  restart vault`
 
-13. Перезапустите vault и выполните команду vault operator unseal -migrate.
+### 13. Перезапустите vault и выполните команду vault operator unseal -migrate.
 
 `vault status`
 
@@ -249,5 +245,5 @@ seal "transit" {
 
 `vault status`
 
-ВАЖНО! Перед отправкой задания на проверку перезагрузите основной инстанс vault-сервера (`systemctl restart vault`). Убедитесь, что unseal происходит автоматически!
+### ВАЖНО! Перед отправкой задания на проверку перезагрузите основной инстанс vault-сервера (`systemctl restart vault`). Убедитесь, что unseal происходит автоматически!
 
