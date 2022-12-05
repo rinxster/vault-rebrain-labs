@@ -182,13 +182,13 @@ EOF
 1. Проведите инициализацию кластера с 3 ключами, любые два из которых распечатывают Vault. Сохраните root token в файл /home/user/root_token.
 
 
-`export VAULT_SKIP_VERIFY=true && export VAULT_ADDR=https://127.0.0.1:8200 && sudo systemctl restart vault && vault operator init -key-shares=1 -key-threshold=1 >> /home/user/vault_keys`
+`export VAULT_SKIP_VERIFY=true && export VAULT_ADDR=https://127.0.0.1:8200 && sudo systemctl restart vault && vault operator init -key-shares=2 -key-threshold=2 >> /home/user/vault_keys`
 
 `cat /home/user/vault_keys`
 
 `vault operator unseal`
 
-`export VAULT_TOKEN="hvs.M3mlsynhSzgqnARSoiFAjKZ5" && echo $VAULT_TOKEN > /home/user/root_token`
+`export VAULT_TOKEN="hvs.e2k53DiMA03Gen8kqYme24cO" && echo $VAULT_TOKEN > /home/user/root_token`
 
 
 
@@ -198,11 +198,13 @@ EOF
 
 3.Импортируйте ранее созданный bundle.pem в секрет rebrain-pki/config/ca.
 
-`vault write rebrain-pki/config/ca pem_bundle=@/opt/certs/bundle.pem`
 
-`vault write rebrain-pki/import/bundle pem_bundle=@/opt/certs/bundle.pem`
+
+// `vault write rebrain-pki/import/bundle pem_bundle=@/opt/certs/bundle.pem`
 
 vault write rebrain-pki/config/urls issuing_certificates="http://127.0.0.1:8200/v1/pki/ca" crl_distribution_point="http://127.0.0.1:8200/v1/pki/crl"
+
+`vault write rebrain-pki/config/ca pem_bundle=@/opt/certs/bundle.pem`
 
 https://gruchalski.com/posts/2020-09-09-multi-tenant-vault-pki-with-custom-root-pem-bundle/
 
@@ -274,70 +276,68 @@ https://www.hashicorp.com/blog/certificate-management-with-vault
 
 `vault token create -policy=cert-issue-policy`
 
-`echo hvs.CAESID0z7vxBXFezHQkWozfNlJiKOipjA6boiNi57_eMviYOGh4KHGh2cy5Ld1JvME9MZ3FPbE0xTmJIVE1TUnYzMU4 > /home/user/cert_issuer_token`
+`echo hvs.CAESIOxJPrIFO167tlxHvJJJFa712hDqBm8kYOW8oAP75AiXGh4KHGh2cy5xaVplRVlCVWhzbUE4bnk5a2tlSVF2Sk0 > /home/user/cert_issuer_token`
 
 7. Выпустите сертификат с common_name="rebrain-vault.local" alt_names="random.rebrain-vault.local". Сохраните его в файл /home/user/cert.pem
 
-//`cat <> payload-7.json { "common_name": "rebrain-vault.local", "alt_names": "random.rebrain-vault.local" } EOT`
+выпускаем сертификат командой curl:
 
-// `curl --header "X-Vault-Token: ..." --request POST --data @payload-7.json http://127.0.0.1:8200/v1/rebrain-pki/issue/local-certs`
-
-// curl --header "X-Vault-Token: hvs.CAESIIi4g-i-pz8bQwrwta323FZvqus7fto34Z6uuXBDpoJuGh4KHGh2cy5yRHd1QUxwYXBibUJOT1BVbnhveTFnSHo" --request POST --data @payload-7.json http://127.0.0.1:8200/v1/rebrain-pki/issue/local-certs
-
-`CERT > /home/user/cert.pem` 
-
+```
  curl \
-    --header "X-Vault-Token: hvs.CAESID0z7vxBXFezHQkWozfNlJiKOipjA6boiNi57_eMviYOGh4KHGh2cy5Ld1JvME9MZ3FPbE0xTmJIVE1TUnYzMU4" \
+    --header "X-Vault-Token: hvs.CAESIOxJPrIFO167tlxHvJJJFa712hDqBm8kYOW8oAP75AiXGh4KHGh2cy5xaVplRVlCVWhzbUE4bnk5a2tlSVF2Sk0" \
     --request POST \
     --data  '{ "common_name": "rebrain-vault.local", "alt_names": "random.rebrain-vault.local" }' \
     https://127.0.0.1:8200/v1/rebrain-pki/issue/local-certs
 
+```
+сохраняем содержимое в файл:
 
-// vault write rebrain-pki/issue/local-certs common_name=rebrain-vault.local alt_names=random.rebrain-vault.local
-
-// vault write rebrain-pki/roles/local-certs allow_server=false enforce_hostnames=false allow_client=true allow_any_name=true allow_bare_domains=true
-
-got bug:
-https://github.com/issacg/vault-pki-client
-
+`CERT > /home/user/cert.pem` 
 
 
 8.Запустите dev-server Vault на 9200/TCP порту в бэкграунде любым удобным способом (screen, nohup и т.д.). Используйте команду vault server -dev -dev-root-token-id=1 -dev-listen-address=0.0.0.0:9200. Она запустит dev-сервер с root-токеном "1", который необходимо использовать для дальнейшей настройки.
 
+в отдельном окне открываем доп сессию и в ней делаем команде
 `vault server -dev -dev-root-token-id=1 -dev-listen-address=0.0.0.0:9200`
 
+далее в основном окне переключаемся на ДЕВ консоль
+
+`export VAULT_ADDR="http://127.0.0.1:9200" && export VAULT_TOKEN=1`
+
 9. В dev-сервере смонтируйте SecretEngine Transit (не забудьте поменять env VAULT_ADDR и VAULT_TOKEN) как transit-autounseal и создайте ключ vault-autounseal.
 
-vault secrets enable -path=transit-autounseal transit
+монтируем транзит:
+`vault secrets enable -path=transit-autounseal transit`
 
-9. В dev-сервере смонтируйте SecretEngine Transit (не забудьте поменять env VAULT_ADDR и VAULT_TOKEN) как transit-autounseal и создайте ключ vault-autounseal.
-
-vault write -f transit-autounseal/keys/vault-autounseal
-
-export VAULT_ADDR="http://127.0.0.1:9200" && export VAULT_TOKEN=1
-
+создаём ключ:
+`vault write -f transit-autounseal/keys/vault-autounseal`
 
 10. В dev-сервере создайте политику transit-autounseal со следующим содержимым:
 ```
 path "transit-autounseal/encrypt/vault-autounseal" {
    capabilities = [ "update" ]
 }
-
 path "transit-autounseal/decrypt/vault-autounseal" {
    capabilities = [ "update" ]
 }
 ```
 
+```
 echo 'path "transit-autounseal/encrypt/vault-autounseal" {
    capabilities = [ "update" ]
 }
 path "transit-autounseal/decrypt/vault-autounseal" {
    capabilities = [ "update" ]
 }' | vault policy write transit-autounseal -
+```
+
+проверяем политику и убеждаемся, что она создалась корректно.
+
+`vault policy read transit-autounseal`
 
 11. Создайте периодический токен для этой политики с периодом 24 часа.
 
-vault create -policy=transit-autounseal -period=24h
+`vault token create -policy=transit-autounseal -period=24h`
 
 12. Добавьте конфигурацию seal в основной инстанс. Подставьте Ваши значения токена в соотвествующие поля.
 ```
@@ -349,27 +349,44 @@ seal "transit" {
   tls_skip_verify    = "true"
 }
 ```
+открываем конфигурационный файл:
 
-timecode 2.10
+`sudo nano /etc/vault.d/vault.hcl`
 
-sudo nano /etc/vault.d/vault.hcl
+и добавляем туда кусок, где токен - ваш токен сгенерированный в шаге 11 выше.
 
+```
 seal "transit" {
   address            = "http://127.0.0.1:9200"
-  token              = ""
+  token              = "hvs.CAESIAs37fvdlVeZqu2mp7G2KUl03ytNL9uw3lplVwNvJPR5Gh4KHGh2cy5lQUFyMTJwRjlxUWxGMWJGYlRheXU3bUw"
   key_name           = "vault-autounseal"
   mount_path         = "transit-autounseal"
   tls_skip_verify    = "true"
 }
+```
+переключаемся обратно на основной экземпляр Vault
 
-systemctl vault restart
+`export VAULT_ADDR="https://127.0.0.1:8200" && export VAULT_TOKEN=hvs.e2k53DiMA03Gen8kqYme24cO`
 
-export VAULT_ADDR="http://127.0.0.1:8200" && export VAULT_TOKEN= ""
+перезапускаем волт, чтобы применилось измнение конфиг файла
 
-vault operator seal
-
+`systemctl  restart vault`
 
 13. Перезапустите vault и выполните команду vault operator unseal -migrate.
 
-ВАЖНО! Перед отправкой задания на проверку перезагрузите основной инстанс vault-сервера (systemctl restart vault). Убедитесь, что unseal происходит автоматически!
+`vault status`
+
+`vault operator unseal -migrate`
+
+распечатываем волт вбиваем 2 ключа для распаковки основного экземлпяра и смотрим статус.
+
+`vault status`
+
+перезапускаем волт и снова смотрим статус. он должен быть автоматически распечатан.
+
+`systemctl restart vault`
+
+`vault status`
+
+ВАЖНО! Перед отправкой задания на проверку перезагрузите основной инстанс vault-сервера (`systemctl restart vault`). Убедитесь, что unseal происходит автоматически!
 
