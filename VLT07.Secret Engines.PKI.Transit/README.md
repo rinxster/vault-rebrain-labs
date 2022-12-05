@@ -1,5 +1,5 @@
 # VLT 07: Secret Engines. PKI, Transit
-*** 
+
 ## Описание:
 Прежде чем приступить к выполнению практического задания, рекомендуем Вам освежить в памяти содержание вебинара:
 
@@ -10,10 +10,6 @@
 
 ## Перед практикой:
 Прежде чем приступить к выполнению задания, создайте в каталоге /opt/certs файл bundle.pem со следующим содержимым.
-```
-
-
----
 
 `sudo mkdir /opt/certs`
 
@@ -127,48 +123,14 @@ allow_bare_domains=true
 ```
 5.Сделайте политику с именем cert-issue-policy, которая позволяет выпускать сертификаты с ролью local-certs
 
-// `vault policy write -tls-skip-verify cert-issue-policy - << EOF
-//path "rebrain-pki/roles/local-certs/*" 
-//{ 
-//   capabilities = ["list", "read", "create", "update", "delete", "sudo"] 
-//   } 
-//EOF`
-
-//echo 'path "rebrain-pki/*" {
-//  capabilities = ["list", "sudo", "read","create","update"]
-//}' | vault policy write cert-issue-policy -
-
-
+```
 echo 'path "rebrain-pki/issue/local-certs" {
   capabilities = ["create", "update"]
 }' | vault policy write cert-issue-policy -
-
-
-//echo 'path "rebrain-pki/issue/*" {
-//  capabilities = ["list", "sudo", "read","create","update"]
-//}
-//path "rebrain-pki/certs" {
-//  capabilities = ["list", "sudo", "read","create","update"]
-//}
-//path "rebrain-pki/revoke" {
-//      capabilities = ["create", "update"]
-//    }
-//path "rebrain-pki/tidy" {
-//      capabilities = ["create", "update"]
-//    }
-//path "rebrain-pki/cert/ca" {
-//      capabilities = ["read"]
-//    }
-//path "auth/token/renew" {
-//      capabilities = ["update"]
-//    }
-//path "auth/token/renew-self" {
-//      capabilities = ["update"]
-//    }' | vault policy write cert-issue-policy -
-
+```
+useful links:
 https://medium.com/hashicorp-engineering/pki-as-a-service-with-hashicorp-vault-a8d075ece9a
 https://www.ibm.com/docs/en/cloud-private/3.2.0?topic=manager-using-vault-issue-certificates
-
 https://www.hashicorp.com/blog/certificate-management-with-vault
 
 6.Выпустите токен с этой политикой (срок жизни и другие параметры не важны) и запишите токен в файл /home/user/cert_issuer_token
