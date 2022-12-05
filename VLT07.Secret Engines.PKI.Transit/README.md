@@ -188,7 +188,7 @@ EOF
 
 `vault operator unseal`
 
-`export VAULT_TOKEN="hvs.IQAqzl5PdqRt9Qw0oL2y8k2y" && echo $VAULT_TOKEN > /home/user/root_token`
+`export VAULT_TOKEN="hvs.M3mlsynhSzgqnARSoiFAjKZ5" && echo $VAULT_TOKEN > /home/user/root_token`
 
 
 
@@ -308,6 +308,15 @@ https://github.com/issacg/vault-pki-client
 
 9. В dev-сервере смонтируйте SecretEngine Transit (не забудьте поменять env VAULT_ADDR и VAULT_TOKEN) как transit-autounseal и создайте ключ vault-autounseal.
 
+vault secrets enable -path=transit-autounseal transit
+
+9. В dev-сервере смонтируйте SecretEngine Transit (не забудьте поменять env VAULT_ADDR и VAULT_TOKEN) как transit-autounseal и создайте ключ vault-autounseal.
+
+vault write -f transit-autounseal/keys/vault-autounseal
+
+export VAULT_ADDR="http://127.0.0.1:9200" && export VAULT_TOKEN=1
+
+
 10. В dev-сервере создайте политику transit-autounseal со следующим содержимым:
 ```
 path "transit-autounseal/encrypt/vault-autounseal" {
@@ -319,7 +328,16 @@ path "transit-autounseal/decrypt/vault-autounseal" {
 }
 ```
 
+echo 'path "transit-autounseal/encrypt/vault-autounseal" {
+   capabilities = [ "update" ]
+}
+path "transit-autounseal/decrypt/vault-autounseal" {
+   capabilities = [ "update" ]
+}' | vault policy write transit-autounseal -
+
 11. Создайте периодический токен для этой политики с периодом 24 часа.
+
+vault create -policy=transit-autounseal -period=24h
 
 12. Добавьте конфигурацию seal в основной инстанс. Подставьте Ваши значения токена в соотвествующие поля.
 ```
@@ -331,6 +349,25 @@ seal "transit" {
   tls_skip_verify    = "true"
 }
 ```
+
+timecode 2.10
+
+sudo nano /etc/vault.d/vault.hcl
+
+seal "transit" {
+  address            = "http://127.0.0.1:9200"
+  token              = ""
+  key_name           = "vault-autounseal"
+  mount_path         = "transit-autounseal"
+  tls_skip_verify    = "true"
+}
+
+systemctl vault restart
+
+export VAULT_ADDR="http://127.0.0.1:8200" && export VAULT_TOKEN= ""
+
+vault operator seal
+
 
 13. Перезапустите vault и выполните команду vault operator unseal -migrate.
 
