@@ -215,6 +215,8 @@ services:
 ```
 ### 5. Запустите кластер командой docker-compose -f /home/user/docker-compose.yml.
 
+`docker-compose -f /home/user/docker-compose.yml`
+
 ### 6. Произведите инициализацию первой ноды с любым количеством ключей и unseal кластера. Cохраните рут токен в файл /home/user/root_token. Для нод используется следующий мапинг портом на localhost:
 ```
 https://127.0.0.1:8300 - первая нода
