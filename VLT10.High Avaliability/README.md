@@ -7,7 +7,7 @@
 
 Задание:
 
-1. Создайте каталоги
+### 1. Создайте каталоги
 ```
 /vault
 /vault/cert
@@ -16,7 +16,10 @@
 /vault/storage/node2
 /vault/storage/node3
 ```
-2. В каталог /vault/cert поместите сертификаты:
+
+mkdir /vault/cert && mkdir /vault/config && mkdir /vault/storage/node1 && mkdir /vault/storage/node2 && mkdir /vault/storage/node3
+
+###  2. В каталог /vault/cert поместите сертификаты:
 ca.pem:
 
 ```
@@ -104,7 +107,7 @@ eQrPuLC0mLb76plezBzVLBkyVDXH5w5TEhTEq4pWmkVd6cr+oYNdTSSKIM85dxxk
 Hdmp7MA1TnlktiuxVvRblZkUWkaLHRvK8AIyoGluHaeHTmTlVzb9tA==
 -----END RSA PRIVATE KEY-----
 ```
-3. Создайте конфигурацию для каждой ноды Vault HA raft storage.
+###  3. Создайте конфигурацию для каждой ноды Vault HA raft storage.
 - Для адресов нод в кластере используйте следующие dns-имена: vault-node1, vault-node2, vault-node3.
 - storage должен находиться в каталоге /vault/storage
 - Используйте ранее созданные сертификаты для настройки TLS для нод в кластере
@@ -150,7 +153,7 @@ storage "raft" {
   }
 }
 ```
-4. Создайте docker-compose файл по пути /home/user/docker-compose.yml.
+###  4. Создайте docker-compose файл по пути /home/user/docker-compose.yml.
 ```
 version: '3'
 services:
@@ -199,14 +202,14 @@ services:
       - "8500:8200/tcp"
     container_name: vault-node3
 ```
-5. Запустите кластер командой docker-compose -f /home/user/docker-compose.yml.
+### 5. Запустите кластер командой docker-compose -f /home/user/docker-compose.yml.
 
-6. Произведите инициализацию первой ноды с любым количеством ключей и unseal кластера. Cохраните рут токен в файл /home/user/root_token. Для нод используется следующий мапинг портом на localhost:
+### 6. Произведите инициализацию первой ноды с любым количеством ключей и unseal кластера. Cохраните рут токен в файл /home/user/root_token. Для нод используется следующий мапинг портом на localhost:
 ```
 https://127.0.0.1:8300 - первая нода
 https://127.0.0.1:8400 - вторая нода
 https://127.0.0.1:8500 - третья нода
 ```
-7. Выполните unseal второй и третьей ноды.
+###  7. Выполните unseal второй и третьей ноды.
 
-8. С помощью команды vault operator raft list-peers убедитесь, что кластер собран и выбран лидер.
+###  8. С помощью команды vault operator raft list-peers убедитесь, что кластер собран и выбран лидер.
