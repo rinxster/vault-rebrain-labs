@@ -20,9 +20,10 @@
 mkdir /vault/cert && mkdir /vault/config && mkdir /vault/storage/node1 && mkdir /vault/storage/node2 && mkdir /vault/storage/node3
 
 ###  2. В каталог /vault/cert поместите сертификаты:
-ca.pem:
+ca.pem 
 
 ```
+sudo tee /vault/cert/ca.pem << EOF
 -----BEGIN CERTIFICATE-----
 MIID9DCCAtygAwIBAgIUdKUqKicUHh0Nrduu7tCZ5fUPjCkwDQYJKoZIhvcNAQEL
 BQAwgZExCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQH
@@ -47,9 +48,11 @@ W9lv7apEcssDq3wielaCtd42XpjnXP//+DlA/c7Czs9rleVyay4i3M23/9ko7QT2
 UIn64Ne5/tX1QtpDSqBIZQqaO3bGH8f1y29BjMIyV7AnhPlu9KGCR4GS2FZeo7T6
 PmbOK+nqyHY=
 -----END CERTIFICATE-----
+EOF
 ```
 node-cert.pem:
 ```
+sudo tee /vault/cert/node-cert.pem << EOF
 -----BEGIN CERTIFICATE-----
 MIIEZjCCA06gAwIBAgIUazj7Q3SRbxZM2GNu4BSMp20iUbEwDQYJKoZIhvcNAQEL
 BQAwgZExCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQH
@@ -76,9 +79,11 @@ wd4WfjV1E0WVrKSph3QP2t58LjP2VLbh4J96EnQo8gdIh1sT+MvNflyfsyugYDfX
 Yr8U044iSrQ3JMxbBDB/wTEEzybIXlSVfgiuBvL7xG48iBQOYm5HyidCMSAWCRTS
 /Rqs9//go/56El3mPPEhSqMXrwAsUjDnlZE=
 -----END CERTIFICATE-----
+EOF
 ```
 node-key.pem:
 ```
+sudo tee /vault/cert/node-key.pem << EOF
 -----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEArD7JGwV7Ev8TpaI7rm9WE668/BgCwMvCH7VKGz6dllENSHa1
 tyXhCPidieSbOQ1sXeKQ6oHajbj5ZPEJ2XJ2bkudMkrAyXlKDrGBWHG7fGaVkvVk
@@ -106,6 +111,8 @@ jAYyY+0CgYAb0FWL6I9egOLrVfvQ/JzW8eaB2t9VyzZI577tPpN4/rod+g4r7zKJ
 eQrPuLC0mLb76plezBzVLBkyVDXH5w5TEhTEq4pWmkVd6cr+oYNdTSSKIM85dxxk
 Hdmp7MA1TnlktiuxVvRblZkUWkaLHRvK8AIyoGluHaeHTmTlVzb9tA==
 -----END RSA PRIVATE KEY-----
+EOF
+
 ```
 ###  3. Создайте конфигурацию для каждой ноды Vault HA raft storage.
 - Для адресов нод в кластере используйте следующие dns-имена: vault-node1, vault-node2, vault-node3.
@@ -153,6 +160,10 @@ storage "raft" {
   }
 }
 ```
+
+```
+```
+
 ###  4. Создайте docker-compose файл по пути /home/user/docker-compose.yml.
 ```
 version: '3'
