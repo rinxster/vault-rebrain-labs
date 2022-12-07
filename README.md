@@ -1,2 +1,1 @@
 # vault-labs
-test
