@@ -334,7 +334,7 @@ vault operator unseal
 ###  8. С помощью команды vault operator raft list-peers убедитесь, что кластер собран и выбран лидер.
 
 ```
-vault login
+vault login <your_root_token_here>
 
 vault operator raft list-peers
 ```
