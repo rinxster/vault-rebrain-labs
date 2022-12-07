@@ -17,7 +17,7 @@
 /vault/storage/node3
 ```
 
-mkdir /vault/cert && mkdir /vault/config && mkdir /vault/storage/node1 && mkdir /vault/storage/node2 && mkdir /vault/storage/node3
+sudo mkdir /vault && sudo mkdir /vault/cert && sudo mkdir /vault/config && sudo mkdir /vault/storage/node1 && sudo mkdir /vault/storage/node2 && sudo  mkdir /vault/storage/node3
 
 ###  2. В каталог /vault/cert поместите сертификаты:
 ca.pem 
@@ -121,6 +121,8 @@ EOF
 - Файл конфигурации разместите по адресу /vault/config/vault-node[номер-ноды].hcl
 Пример конфигурации для первой ноды:
 ```
+sudo tee /vault/config/vault-node1.hcl << EOF
+
 ui = true
 disable_mlock = true
 
@@ -159,10 +161,98 @@ storage "raft" {
     leader_client_key_file = "/vault/cert/node-key.pem"
   }
 }
+EOF
 ```
 
 ```
+sudo tee /vault/config/vault-node2.hcl  << EOF
+
+ui = true
+disable_mlock = true
+
+listener "tcp" {
+  address       = "0.0.0.0:8200"
+  tls_cert_file = "/vault/cert/node-cert.pem"
+  tls_key_file  = "/vault/cert/node-key.pem"
+}
+
+cluster_addr = "https://vault-node2:8201"
+api_addr    = "https://vault-node2:8200"
+cluster_name = "vault"
+
+storage "raft" {
+  path         = "/vault/storage"
+  node_id      = "vault-node2"
+
+  retry_join {
+    leader_api_addr = "https://vault-node1:8200"
+    leader_ca_cert_file = "/vault/cert/ca.pem"
+    leader_client_cert_file = "/vault/cert/node-cert.pem"
+    leader_client_key_file = "/vault/cert/node-key.pem"
+  }
+
+  retry_join {
+    leader_api_addr = "https://vault-node2:8200"
+    leader_ca_cert_file = "/vault/cert/ca.pem"
+    leader_client_cert_file = "/vault/cert/node-cert.pem"
+    leader_client_key_file = "/vault/cert/node-key.pem"
+  }
+
+  retry_join {
+    leader_api_addr = "https://vault-node3:8200"
+    leader_ca_cert_file = "/vault/cert/ca.pem"
+    leader_client_cert_file = "/vault/cert/node-cert.pem"
+    leader_client_key_file = "/vault/cert/node-key.pem"
+  }
+}
+EOF
+
 ```
+
+```
+sudo tee /vault/config/vault-node3.hcl  << EOF
+
+ui = true
+disable_mlock = true
+
+listener "tcp" {
+  address       = "0.0.0.0:8200"
+  tls_cert_file = "/vault/cert/node-cert.pem"
+  tls_key_file  = "/vault/cert/node-key.pem"
+}
+
+cluster_addr = "https://vault-node3:8201"
+api_addr    = "https://vault-node3:8200"
+cluster_name = "vault"
+
+storage "raft" {
+  path         = "/vault/storage"
+  node_id      = "vault-node3"
+
+  retry_join {
+    leader_api_addr = "https://vault-node1:8200"
+    leader_ca_cert_file = "/vault/cert/ca.pem"
+    leader_client_cert_file = "/vault/cert/node-cert.pem"
+    leader_client_key_file = "/vault/cert/node-key.pem"
+  }
+
+  retry_join {
+    leader_api_addr = "https://vault-node2:8200"
+    leader_ca_cert_file = "/vault/cert/ca.pem"
+    leader_client_cert_file = "/vault/cert/node-cert.pem"
+    leader_client_key_file = "/vault/cert/node-key.pem"
+  }
+
+  retry_join {
+    leader_api_addr = "https://vault-node3:8200"
+    leader_ca_cert_file = "/vault/cert/ca.pem"
+    leader_client_cert_file = "/vault/cert/node-cert.pem"
+    leader_client_key_file = "/vault/cert/node-key.pem"
+  }
+}
+EOF
+```
+
 
 ###  4. Создайте docker-compose файл по пути /home/user/docker-compose.yml.
 ```
@@ -223,6 +313,27 @@ https://127.0.0.1:8300 - первая нода
 https://127.0.0.1:8400 - вторая нода
 https://127.0.0.1:8500 - третья нода
 ```
+```
+export VAULT_ADDR=https://127.0.0.1:8300 && export VAULT_SKIP_VERIFY=true && vault operator init -key-shares=1 -key-threshold=1 >> /home/user/vault_keys
+
+vault operator unseal 
+```
+
 ###  7. Выполните unseal второй и третьей ноды.
 
+```
+export VAULT_ADDR=https://127.0.0.1:8400
+vault operator unseal
+```
+```
+export VAULT_ADDR=https://127.0.0.1:8500
+vault operator unseal
+```
+
 ###  8. С помощью команды vault operator raft list-peers убедитесь, что кластер собран и выбран лидер.
+
+```
+vault login
+
+vault operator raft list-peers
+```
