@@ -1,4 +1,4 @@
-**VLT 10: Отказоустойчивость**
+# VLT 10: Отказоустойчивость
 
 Описание:
 В текущем задании мы изучаем построение отказоустойчивого кластера Vault с использованием Raft Storage Backend.
@@ -17,7 +17,7 @@
 /vault/storage/node3
 ```
 
-sudo mkdir /vault && sudo mkdir /vault/cert && sudo mkdir /vault/config && sudo mkdir /vault/storage/node1 && sudo mkdir /vault/storage/node2 && sudo  mkdir /vault/storage/node3
+'sudo mkdir /vault && sudo mkdir /vault/cert && sudo mkdir /vault/config && sudo mkdir /vault/storage/node1 && sudo mkdir /vault/storage/node2 && sudo  mkdir /vault/storage/node3'
 
 ###  2. В каталог /vault/cert поместите сертификаты:
 ca.pem 
@@ -305,7 +305,8 @@ services:
 ```
 ### 5. Запустите кластер командой docker-compose -f /home/user/docker-compose.yml.
 
-`docker-compose -f /home/user/docker-compose.yml`
+`docker-compose up -d`
+
 
 ### 6. Произведите инициализацию первой ноды с любым количеством ключей и unseal кластера. Cохраните рут токен в файл /home/user/root_token. Для нод используется следующий мапинг портом на localhost:
 ```
