@@ -222,6 +222,7 @@ GFlCoJYukGBTqgMg+P/5OHXkQEY/rQKqpCEcf6e64yZMb6TjIcUD
 -----END RSA PRIVATE KEY-----
 ```
 #### 8. Создайте PKI-роль k8s-certs со следующими параметрами:
+
 max_ttl=24h allowed_domains=rebrain.local allow_bare_domains=true
 
 #### 9. Создайте политику k8s-certs со следующими правилами:
@@ -229,10 +230,12 @@ max_ttl=24h allowed_domains=rebrain.local allow_bare_domains=true
 path "k8s-pki*"                        { capabilities = ["read", "list"] }
 path "k8s-pki/sign/k8s-certs"    { capabilities = ["create", "update"] }
 path "k8s-pki/issue/k8s-certs"   { capabilities = ["create"] }
+
 и периодический токен c периодом 24h (командой vault token create -period=24h -policy=k8s-certs), запомните или запишите его, он понадобится далее.
 
 #### 10. Задеплойте cert-manager в кластер командой:
-kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.10.0/cert-manager.yaml
+
+`kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.10.0/cert-manager.yaml`
 
 #### 11. Примените следующие манифесты для конфигурации Vault Issuer:
 ```
