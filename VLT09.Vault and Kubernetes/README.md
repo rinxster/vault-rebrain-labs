@@ -1,4 +1,4 @@
-**VLT 09: Vault and Kubernetes**
+# VLT 09: Vault and Kubernetes
 
 *Описание:*
 В текущем задании мы:
@@ -9,20 +9,23 @@
 настроили external secret operator для автоматического создания Secret
 Вы можете посмотреть запись по ссылке. Также для Вашего удобства прикладываем презентацию к вебинару.
 
-Задание:
+## Задание:
 Вам будет предоставлен доступ к VPS, на которой уже запущен Kubernetes. Вам необходимо выполнить все задания в этом кластере. Все команды для работы с Kuberentes указаны в тексте задания.
 
 Перед началом работы, обязательно выполните команды:
-
+```
 minikube update-context
 minikube tunnel -c &
+```
+
 Helm репозиторий HashiCorp недоступен в РФ, поэтому в каталоге /home/usr/vault_helm лежит чарт vault-0.22.1.tgz. Его нужно будет установить в ходе задания.
 
 Для работы с Kubernetes предлагаем использовать kubectl или k9s. По желанию Вы можете загрузить свои утилиты для работы с Kubernetes на виртуальную машину.
 
-Задание
+### Задание
 
-Запустите minikube командой minikube start. Разверните инстанс Vault server и Vault Injector в кластере kubernetes. Проведите инициализацию кластера с тремя ключами, любые два из которых распечатывают Vault. Сохраните root token в файл /home/user/root_token. Используйте namespace vault и следующую конфигурацию Helm-chart:
+####  1. Запустите minikube командой minikube start. Разверните инстанс Vault server и Vault Injector в кластере kubernetes. Проведите инициализацию кластера с тремя ключами, любые два из которых распечатывают Vault. Сохраните root token в файл /home/user/root_token. Используйте namespace vault и следующую конфигурацию Helm-chart:
+```
 global:
   enabled: true
   tlsDisable: true
@@ -44,12 +47,15 @@ ui:
 
 ingress:
   enabled: false
+```
+
 Сохраните вышеуказанный код в файл values.yaml в каталоге /home/user/vault_helm/values.yaml и выполните команду
 
-kubectl create ns vault 2>/dev/null && helm install -f /home/user/vault_helm/values.yaml -n vault vault /home/user/vault_helm/vault-0.22.1.tgz
+`kubectl create ns vault 2>/dev/null && helm install -f /home/user/vault_helm/values.yaml -n vault vault /home/user/vault_helm/vault-0.22.1.tgz`
+
 URL сервиса vault-ui получите с помощью команды minikube service -n vault vault-ui --url, не забудьте указать его в VAULT_ADDR.
 
-Настройте AuthMethod Kubernetes. Укажите API-адрес Вашего Kubernetes кластера и сертификат CA.
+#### 2. Настройте AuthMethod Kubernetes. Укажите API-адрес Вашего Kubernetes кластера и сертификат CA.
 Получите IP kubernetes с помощью команды kubectl describe svc kubernetes | grep IP:.
 
 В качестве kubernetes_host укажите https://[полученный_ip].
@@ -58,11 +64,11 @@ URL сервиса vault-ui получите с помощью команды mi
 
 Создайте роль autocheck-role, которая будет разрешать авторизацию в Vault с ServiceAccount autocheck из namespace default c политикой db-readonly-policy. TTL выпускаемого токена установите в 10 минут.
 
-Включите движок kv-v2 (path=kv-v2). Создайте секрет db с полями login=user и password=pass.
+#### 3. Включите движок kv-v2 (path=kv-v2). Создайте секрет db с полями login=user и password=pass.
 
-Создайте политику db-read-only-policy, которая разрешает чтение ранее созданного секрета db.
+#### 4. Создайте политику db-read-only-policy, которая разрешает чтение ранее созданного секрета db.
 
-Выполните деплой следующего манифеста (например, сохраните в /home/user/autocheck.yaml и выполните команду kubectl apply -f /home/user/autocheck.yaml):
+#### 5. Выполните деплой следующего манифеста (например, сохраните в /home/user/autocheck.yaml и выполните команду kubectl apply -f /home/user/autocheck.yaml):
 ```
 apiVersion: v1
 kind: ServiceAccount
@@ -157,9 +163,10 @@ spec:
 Дождитесь, пока POD перейдет в состояние Running. Затем проверьте, что файл config.yml можно прочитать командой curl $(minikube service nginx-autocheck --url)/config.yml.
 
 **Дополнительно**: Можно изменить значения полей в секрете `db` и выполнить команду повторно, убедившись, что значения меняются.
-Включите движок секретов PKI по стандартному пути k8s-pki/
 
-Импортируйте следующий CA сертификат в k8s-pki/
+#### 6. Включите движок секретов PKI по стандартному пути k8s-pki/
+
+#### 7. Импортируйте следующий CA сертификат в k8s-pki/
 ```
 -----BEGIN CERTIFICATE-----
 MIIEHzCCAwegAwIBAgIUMjpzvgqs7MP8+HmsvUc5Hn4zj7IwDQYJKoZIhvcNAQEL
@@ -214,18 +221,20 @@ CxzAa39lzTqcFdriANUiAOsf37VHkTNFE39b0A6/rIhUW44vOkTNZH6MniCIRqgw
 GFlCoJYukGBTqgMg+P/5OHXkQEY/rQKqpCEcf6e64yZMb6TjIcUD
 -----END RSA PRIVATE KEY-----
 ```
-Создайте PKI-роль k8s-certs со следующими параметрами:
+#### 8. Создайте PKI-роль k8s-certs со следующими параметрами:
 max_ttl=24h allowed_domains=rebrain.local allow_bare_domains=true
-Создайте политику k8s-certs со следующими правилами:
+
+#### 9. Создайте политику k8s-certs со следующими правилами:
 
 path "k8s-pki*"                        { capabilities = ["read", "list"] }
 path "k8s-pki/sign/k8s-certs"    { capabilities = ["create", "update"] }
 path "k8s-pki/issue/k8s-certs"   { capabilities = ["create"] }
 и периодический токен c периодом 24h (командой vault token create -period=24h -policy=k8s-certs), запомните или запишите его, он понадобится далее.
 
-Задеплойте cert-manager в кластер командой:
+#### 10. Задеплойте cert-manager в кластер командой:
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.10.0/cert-manager.yaml
-Примените следующие манифесты для конфигурации Vault Issuer:
+
+#### 11. Примените следующие манифесты для конфигурации Vault Issuer:
 ```
 apiVersion: v1
 kind: Secret
