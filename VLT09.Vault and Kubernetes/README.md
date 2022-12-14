@@ -26,6 +26,8 @@ Helm репозиторий HashiCorp недоступен в РФ, поэтом
 
 ####  1. Запустите minikube командой minikube start. Разверните инстанс Vault server и Vault Injector в кластере kubernetes. Проведите инициализацию кластера с тремя ключами, любые два из которых распечатывают Vault. Сохраните root token в файл /home/user/root_token. Используйте namespace vault и следующую конфигурацию Helm-chart:
 ```
+sudo tee /home/user/values.yaml << EOF
+
 global:
   enabled: true
   tlsDisable: true
@@ -47,28 +49,78 @@ ui:
 
 ingress:
   enabled: false
+
+EOF
 ```
+`kubectl create ns vault`
+
+`helm install -n vault -f values.yaml vault vault_helm/vault-0.22.1.tgz`
+
+URL сервиса vault-ui получите с помощью команды minikube service -n vault vault-ui --url, не забудьте указать его в VAULT_ADDR.
+
+`minikube service -n vault vault-ui --url`
+
+`export VAULT_ADDR=http://192.168.49.2:31733`
+
+`export VAULT_SKIP_VERIFY=true && vault operator init -key-shares=1 -key-threshold=1 >> /home/user/vault_keys`
 
 Сохраните вышеуказанный код в файл values.yaml в каталоге /home/user/vault_helm/values.yaml и выполните команду
 
 `kubectl create ns vault 2>/dev/null && helm install -f /home/user/vault_helm/values.yaml -n vault vault /home/user/vault_helm/vault-0.22.1.tgz`
-
-URL сервиса vault-ui получите с помощью команды minikube service -n vault vault-ui --url, не забудьте указать его в VAULT_ADDR.
 
 #### 2. Настройте AuthMethod Kubernetes. Укажите API-адрес Вашего Kubernetes кластера и сертификат CA.
 Получите IP kubernetes с помощью команды kubectl describe svc kubernetes | grep IP:.
 
 В качестве kubernetes_host укажите https://[полученный_ip].
 
+`export K8S_HOST=https://10.96.0.1`
+
 В качестве token_reviewer_jwt используйте kubectl create token vault -n vault.
+
+`vault auth enable kubernetes`
+
+`export TOKEN_REVIEWER_JWT=$(kubectl create token vault -n vault)`
+
+`export CA_CRT=$(cat ~/.minikube/ca.crt)`
+
+```
+vault write auth/kubernetes/config \
+token_reviewer_jwt="$TOKEN_REVIEWER_JWT" \
+kubernetes_host="$K8S_HOST" \
+kubernetes_ca_cert="$CA_CRT"
+```
 
 Создайте роль autocheck-role, которая будет разрешать авторизацию в Vault с ServiceAccount autocheck из namespace default c политикой db-readonly-policy. TTL выпускаемого токена установите в 10 минут.
 
+```
+vault write auth/kubernetes/role/autocheck-role \
+bound_service_account_names=autocheck \
+bound_service_account_namespaces=default \
+policies=db-read-only-policy \
+ttl=10m
+```
+
 #### 3. Включите движок kv-v2 (path=kv-v2). Создайте секрет db с полями login=user и password=pass.
+
+`vault secrets enable -path=kv-v2 -version=2 kv`
+
+`vault kv put -mount=kv-v2 db login=user password=pass`
+
 
 #### 4. Создайте политику db-read-only-policy, которая разрешает чтение ранее созданного секрета db.
 
+```
+vault policy write db-read-only-policy - << EOF 
+
+path "kv-v2/data/db" { 
+  capabilities = ["read"] 
+  } 
+
+EOF
+```
+
 #### 5. Выполните деплой следующего манифеста (например, сохраните в /home/user/autocheck.yaml и выполните команду kubectl apply -f /home/user/autocheck.yaml):
+
 ```
 apiVersion: v1
 kind: ServiceAccount
@@ -162,12 +214,25 @@ spec:
 ```
 Дождитесь, пока POD перейдет в состояние Running. Затем проверьте, что файл config.yml можно прочитать командой curl $(minikube service nginx-autocheck --url)/config.yml.
 
+`curl $(minikube service nginx-autocheck --url)/config.yml`
+
 **Дополнительно**: Можно изменить значения полей в секрете `db` и выполнить команду повторно, убедившись, что значения меняются.
+
+`vault kv put -mount=kv-v2 db login=user2 password=pass2`
+
+`curl $(minikube service nginx-autocheck --url)/config.yml`
 
 #### 6. Включите движок секретов PKI по стандартному пути k8s-pki/
 
+`vault secrets enable -path=k8s-pki pki`
+
+
+
 #### 7. Импортируйте следующий CA сертификат в k8s-pki/
+
+
 ```
+sudo tee /tmp/bundle.pem<<EOF
 -----BEGIN CERTIFICATE-----
 MIIEHzCCAwegAwIBAgIUMjpzvgqs7MP8+HmsvUc5Hn4zj7IwDQYJKoZIhvcNAQEL
 BQAwgZExCzAJBgNVBAYTAlVTMRMwEQYDVQQIEwpDYWxpZm9ybmlhMRYwFAYDVQQH
@@ -220,10 +285,21 @@ cIOHAoGBAJ9MIDt5cGWa1LDdzK9Xf1V7bhv1TOX/bseDtt+1qoKCLcQOzWw2W1v/
 CxzAa39lzTqcFdriANUiAOsf37VHkTNFE39b0A6/rIhUW44vOkTNZH6MniCIRqgw
 GFlCoJYukGBTqgMg+P/5OHXkQEY/rQKqpCEcf6e64yZMb6TjIcUD
 -----END RSA PRIVATE KEY-----
+EOF
 ```
+
+`vault write k8s-pki/config/ca pem_bundle=@/tmp/bundle.pem`
+
 #### 8. Создайте PKI-роль k8s-certs со следующими параметрами:
 
-max_ttl=24h allowed_domains=rebrain.local allow_bare_domains=true
+`max_ttl=24h allowed_domains=rebrain.local allow_bare_domains=true`
+
+```
+vault write k8s-pki/roles/k8s-certs \
+allowed_domains=rebrain.local \
+allow_bare_domains=true \
+ttl="24h"
+```
 
 #### 9. Создайте политику k8s-certs со следующими правилами:
 
@@ -231,7 +307,24 @@ path "k8s-pki*"                        { capabilities = ["read", "list"] }
 path "k8s-pki/sign/k8s-certs"    { capabilities = ["create", "update"] }
 path "k8s-pki/issue/k8s-certs"   { capabilities = ["create"] }
 
+```
+vault policy write k8s-certs - << EOF 
+path "k8s-pki*" 
+{ capabilities = ["read", "list"] } 
+path "k8s-pki/sign/k8s-certs" 
+{ capabilities = ["create", "update"] } 
+path "k8s-pki/issue/k8s-certs" 
+{ capabilities = ["create"] } 
+
+EOF
+
+```
+
 и периодический токен c периодом 24h (командой vault token create -period=24h -policy=k8s-certs), запомните или запишите его, он понадобится далее.
+
+`vault token create -period=24h -policy=k8s-certs`
+
+`echo <token> > token`
 
 #### 10. Задеплойте cert-manager в кластер командой:
 
@@ -278,4 +371,9 @@ spec:
     name: vault-issuer
     kind: Issuer
 ```    
-Сохраните вышеуказанный код в файл, например, autocheck.yaml, и выполните команду kubectl apply -f autocheck.yaml
+Сохраните вышеуказанный код в файл, например, autocheck2.yaml, и выполните команду kubectl apply -f autocheck2.yaml
+
+`cat token | base64`
+
+`kubectl apply -f autocheck2.yaml`
+
