@@ -80,6 +80,49 @@ docker run \
   vault server
 ```
 
+`docker logs `
+
+```
+vault operator init \
+-key-shares=1 \
+-key-threshold =1 \
+| head -n3 \
+| cat > $VAULT_HOME/.vault-init
+
+```
+```
+vault operator unseal \
+$(grep 'Unseal Key 1' $VAULT_HOME/.vault-init | awk '{print $NF}')
+```
+```
+vault login -no-print \
+$(grep 'Initial Root Token' $VAULT_HOME/.vault-init | awk '{print $NF}')
+```
+
+```
+vault policy write prometheus-metrics - << EOF
+
+path { "sys/metrics"
+  capabilities = ["read"]
+}
+
+path { "sys/internal/counters/actuivity"
+  capabilities = ["read"]
+}
+
+EOF
+```
+
+`vault policy list`
+
+```
+vault token create \
+-field=token \
+-policy prometheus-metrics |
+> $VAULT_HOME/prometheus-config/prometheus-token
+```
+
+
 
 ### 5. Создайте файл конфигурации prometheus по пути $VAULT_HOME/prometheus-config/prometheus.yml. Не забудьте поменять ip Vault.
 scrape_configs:
