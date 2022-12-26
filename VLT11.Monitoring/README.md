@@ -98,7 +98,10 @@ datasources:
     tlsClientKey: ""
   version: 1
   editable: true
+```
 Запустите контейнер Grafana.
+
+```
 docker run \
     -d \
     --name grafana \
