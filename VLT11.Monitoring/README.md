@@ -104,7 +104,7 @@ path { "sys/metrics"
   capabilities = ["read"]
 }
 
-path { "sys/internal/counters/actuivity"
+path { "sys/internal/counters/activity"
   capabilities = ["read"]
 }
 
