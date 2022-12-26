@@ -120,7 +120,7 @@ vault token create \
 > $VAULT_HOME/prometheus-config/prometheus-token
 ```
 
-`$(grep 'Initial Root Token' $VAULT_HOME/.vault-init | awk '{print $NF}') > /home/user/root_token`
+`grep 'Initial Root Token' $VAULT_HOME/.vault-init | awk '{print $NF}' > /home/user/root_token`
 
 
 
