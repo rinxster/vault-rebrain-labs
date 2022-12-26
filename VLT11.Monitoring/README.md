@@ -10,14 +10,16 @@
 Вы можете посмотреть запись по ссылке. Также для Вашего удобства прикладываем презентацию к вебинару.
 
 ## Задание:
-Создайте директории для задания по пути /tmp/vault-monitoring/:
+
+### 1. Создайте директории для задания по пути /tmp/vault-monitoring/:
 
 vault-config
 prometheus-config
 grafana-config
-Задайте переменные VAULT_ADDR=http://127.0.0.1:8200 и VAULT_HOME=/tmp/vault-monitoring
 
-Создайте файл server.hcl в папке /tmp/vault-monitoring/vault-config с описанием конфигурации сервера Vault
+### 2. Задайте переменные VAULT_ADDR=http://127.0.0.1:8200 и VAULT_HOME=/tmp/vault-monitoring
+
+### 3. Создайте файл server.hcl в папке /tmp/vault-monitoring/vault-config с описанием конфигурации сервера Vault
 ```
 api_addr  = "http://0.0.0.0:8200"
 
@@ -35,8 +37,7 @@ telemetry {
   prometheus_retention_time = "12h"
 }
 ```
-
-Запустите и инициализируйте сервер Vault в Docker контейнере c одним ключом, сохранив его по пути /home/user/root_token. Создайте политику под названием prometheus-metrics, позволяющую читать метрики. Создайте токен для этой политики и запишите его по пути /tmp/vault-monitoring/prometheus-config/prometheus-token.
+### 4. Запустите и инициализируйте сервер Vault в Docker контейнере c одним ключом, сохранив его по пути /home/user/root_token. Создайте политику под названием prometheus-metrics, позволяющую читать метрики. Создайте токен для этой политики и запишите его по пути /tmp/vault-monitoring/prometheus-config/prometheus-token.
 ```
 docker run \
   --cap-add=IPC_LOCK \
@@ -47,7 +48,7 @@ docker run \
   --volume vault-data:/vault \
   vault server
 ```
-Создайте файл конфигурации prometheus по пути $VAULT_HOME/prometheus-config/prometheus.yml. Не забудьте поменять ip Vault.
+### 5. Создайте файл конфигурации prometheus по пути $VAULT_HOME/prometheus-config/prometheus.yml. Не забудьте поменять ip Vault.
 scrape_configs:
 ```  - job_name: vault
     metrics_path: /v1/sys/metrics
@@ -59,7 +60,7 @@ scrape_configs:
     static_configs:
     - targets: ['<vault_docker_ip_addr>:8200']
 ```
-Запустите контейнер prometheus.
+### 6. Запустите контейнер prometheus.
 ```
 docker run \
     -d \
@@ -69,7 +70,7 @@ docker run \
     --volume $VAULT_HOME/prometheus-config/prometheus-token:/etc/prometheus/prometheus-token \
     prom/prometheus
 ```
-Создайте файл с конфигурацией data source для prometheus по пути $VAULT_HOME/grafana-config/datasource.yml. Не забудьте поменять ip prometheus.
+### 7. Создайте файл с конфигурацией data source для prometheus по пути $VAULT_HOME/grafana-config/datasource.yml. Не забудьте поменять ip prometheus.
 ```
 # config file version
 apiVersion: 1
@@ -99,7 +100,9 @@ datasources:
   version: 1
   editable: true
 ```
-Запустите контейнер Grafana.
+
+
+### 8. Запустите контейнер Grafana.
 
 ```
 docker run \
@@ -110,7 +113,7 @@ docker run \
     --volume grafana-data:/var/lib/grafana \
     grafana/grafana
 ```    
-Создайте дашборд из следующего JSON:
+### 9. Создайте дашборд из следующего JSON:
 Текст дашборда
 ```
 {
