@@ -60,6 +60,7 @@ scrape_configs:
     - targets: ['<vault_docker_ip_addr>:8200']
 ```
 Запустите контейнер prometheus.
+```
 docker run \
     -d \
     --name prometheus \
@@ -67,7 +68,9 @@ docker run \
     --volume $VAULT_HOME/prometheus-config/prometheus.yml:/etc/prometheus/prometheus.yml \
     --volume $VAULT_HOME/prometheus-config/prometheus-token:/etc/prometheus/prometheus-token \
     prom/prometheus
+```
 Создайте файл с конфигурацией data source для prometheus по пути $VAULT_HOME/grafana-config/datasource.yml. Не забудьте поменять ip prometheus.
+```
 # config file version
 apiVersion: 1
 
@@ -372,3 +375,4 @@ docker run \
   "version": 1,
   "weekStart": ""
 }
+```
