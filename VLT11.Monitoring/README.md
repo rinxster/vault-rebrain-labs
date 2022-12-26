@@ -79,9 +79,12 @@ docker run \
   --volume vault-data:/vault \
   vault server
 ```
+
+
 ### 5. Создайте файл конфигурации prometheus по пути $VAULT_HOME/prometheus-config/prometheus.yml. Не забудьте поменять ip Vault.
 scrape_configs:
-```  - job_name: vault
+```  
+- job_name: vault
     metrics_path: /v1/sys/metrics
     params:
       format: ['prometheus']
@@ -91,6 +94,25 @@ scrape_configs:
     static_configs:
     - targets: ['<vault_docker_ip_addr>:8200']
 ```
+
+```
+cat > $VAULT_HOME/prometheus-config/prometheus.yml << EOF
+
+- job_name: vault
+    metrics_path: /v1/sys/metrics
+    params:
+      format: ['prometheus']
+    scheme: http
+    authorization:
+      credentials_file: /etc/prometheus/prometheus-token
+    static_configs:
+    - targets: ['<vault_docker_ip_addr>:8200']
+
+EOF
+
+```
+
+
 ### 6. Запустите контейнер prometheus.
 ```
 docker run \
