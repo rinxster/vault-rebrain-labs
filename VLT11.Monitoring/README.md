@@ -22,11 +22,11 @@ mkdir -p /tmp/vault-monitoring/vault-config \
 /tmp/vault-monitoring/prometheus-config \
 /tmp/vault-monitoring/grafana-config
 ```
-'docker volume create vault-data && docker volume create grafana-data'
+`docker volume create vault-data && docker volume create grafana-data`
 
 ### 2. Задайте переменные VAULT_ADDR=http://127.0.0.1:8200 и VAULT_HOME=/tmp/vault-monitoring
 
-export VAULT_ADDR=http://127.0.0.1:8200 && export VAULT_HOME=/tmp/vault-monitoring
+`export VAULT_ADDR=http://127.0.0.1:8200 && export VAULT_HOME=/tmp/vault-monitoring`
 
 ### 3. Создайте файл server.hcl в папке /tmp/vault-monitoring/vault-config с описанием конфигурации сервера Vault
 ```
@@ -46,6 +46,28 @@ telemetry {
   prometheus_retention_time = "12h"
 }
 ```
+
+```
+cat >  $VAULT_HOME/vault-config/server.hcl << EOF
+
+api_addr  = "http://0.0.0.0:8200"
+
+listener "tcp" {
+  address     = "0.0.0.0:8200"
+  tls_disable = "true"
+}
+
+storage "file" {
+  path = "/vault/data"
+}
+
+telemetry {
+  disable_hostname = true
+  pr
+
+EOF
+```
+
 ### 4. Запустите и инициализируйте сервер Vault в Docker контейнере c одним ключом, сохранив его по пути /home/user/root_token. Создайте политику под названием prometheus-metrics, позволяющую читать метрики. Создайте токен для этой политики и запишите его по пути /tmp/vault-monitoring/prometheus-config/prometheus-token.
 ```
 docker run \
