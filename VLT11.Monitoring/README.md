@@ -197,6 +197,39 @@ datasources:
   editable: true
 ```
 
+```
+cat > $VAULT_HOME/grafana-config/datasource.yml << EOF
+
+# config file version
+apiVersion: 1
+
+datasources:
+- name: vault
+  type: prometheus
+  access: server
+  orgId: 1
+  url: http://<prometheus_docker_ip_addr>:9090
+  password:
+  user:
+  database:
+  basicAuth:
+  basicAuthUser:
+  basicAuthPassword:
+  withCredentials:
+  isDefault:
+  jsonData:
+     graphiteVersion: "1.1"
+     tlsAuth: false
+     tlsAuthWithCACert: false
+  secureJsonData:
+    tlsCACert: ""
+    tlsClientCert: ""
+    tlsClientKey: ""
+  version: 1
+  editable: true
+
+EOF
+```
 
 
 ### 8. Запустите контейнер Grafana.
