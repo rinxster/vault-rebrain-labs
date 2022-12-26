@@ -106,9 +106,10 @@ docker run \
     --volume $VAULT_HOME/grafana-config/datasource.yml:/etc/grafana/provisioning/datasources/prometheus_datasource.yml \
     --volume grafana-data:/var/lib/grafana \
     grafana/grafana
+```    
 Создайте дашборд из следующего JSON:
 Текст дашборда
-
+```
 {
   "annotations": {
     "list": [
