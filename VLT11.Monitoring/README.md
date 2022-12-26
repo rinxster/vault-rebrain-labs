@@ -17,7 +17,16 @@ vault-config
 prometheus-config
 grafana-config
 
+```
+mkdir -p /tmp/vault-monitoring/vault-config \
+/tmp/vault-monitoring/prometheus-config \
+/tmp/vault-monitoring/grafana-config
+```
+'docker volume create vault-data && docker volume create grafana-data'
+
 ### 2. Задайте переменные VAULT_ADDR=http://127.0.0.1:8200 и VAULT_HOME=/tmp/vault-monitoring
+
+export VAULT_ADDR=http://127.0.0.1:8200 && export VAULT_HOME=/tmp/vault-monitoring
 
 ### 3. Создайте файл server.hcl в папке /tmp/vault-monitoring/vault-config с описанием конфигурации сервера Vault
 ```
@@ -100,6 +109,7 @@ datasources:
   version: 1
   editable: true
 ```
+
 
 
 ### 8. Запустите контейнер Grafana.
