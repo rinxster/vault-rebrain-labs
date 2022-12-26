@@ -116,7 +116,7 @@ EOF
 ```
 vault token create \
 -field=token \
--policy prometheus-metrics |
+-policy prometheus-metrics \
 > $VAULT_HOME/prometheus-config/prometheus-token
 ```
 
