@@ -63,8 +63,8 @@ storage "file" {
 
 telemetry {
   disable_hostname = true
-  pr
-
+  prometheus_retention_time = "12h"
+}
 EOF
 ```
 
