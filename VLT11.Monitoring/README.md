@@ -100,11 +100,11 @@ $(grep 'Initial Root Token' $VAULT_HOME/.vault-init | awk '{print $NF}')
 ```
 vault policy write prometheus-metrics - << EOF
 
-path  "sys/metrics" {
+path  "/sys/metrics" {
   capabilities = ["read"]
 }
 
-path  "sys/internal/counters/activity" {
+path  "/sys/internal/counters/activity" {
   capabilities = ["read"]
 }
 
