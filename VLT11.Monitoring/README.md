@@ -125,8 +125,8 @@ vault token create \
 
 
 ### 5. Создайте файл конфигурации prometheus по пути $VAULT_HOME/prometheus-config/prometheus.yml. Не забудьте поменять ip Vault.
+```
 scrape_configs:
-```  
 - job_name: vault
     metrics_path: /v1/sys/metrics
     params:
@@ -141,6 +141,7 @@ scrape_configs:
 ```
 cat > $VAULT_HOME/prometheus-config/prometheus.yml << EOF
 
+scrape_configs:
 - job_name: vault
     metrics_path: /v1/sys/metrics
     params:
@@ -154,7 +155,6 @@ cat > $VAULT_HOME/prometheus-config/prometheus.yml << EOF
 EOF
 
 ```
-
 
 ### 6. Запустите контейнер prometheus.
 ```
