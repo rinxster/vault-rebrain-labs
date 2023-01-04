@@ -80,7 +80,7 @@ docker run \
   vault server
 ```
 
-`docker logs `
+`docker logs vault`
 
 ```
 vault operator init -key-shares=1 -key-threshold=1 \
@@ -526,7 +526,7 @@ docker run \
 
 
 
-VLT 12: Audit
+# VLT 12: Audit
 Описание:
 Привет! В текущем задании мы изучим:
 
@@ -536,14 +536,45 @@ VLT 12: Audit
 как настроить логирование и аудит логов Vault на базе PLG-стека.
 Вы можете посмотреть запись по ссылке. Также для Вашего удобства прикладываем презентацию к вебинару.
 
-Задание:
-Создайте директории для задания по пути /tmp/vault-monitoring/:
+## Задание:
+### 1. Создайте директории для задания по пути /tmp/vault-monitoring/:
 
 vault-config
 promtail-config
 grafana-config
 loki-config
-Задайте переменные VAULT_ADDR=http://127.0.0.1:8200 и VAULT_HOME=/tmp/vault-monitoring. Создайте файл server.hcl в папке /tmp/vault-monitoring/vault-config с описанием конфигурации сервера Vault
+
+```
+mkdir -p /tmp/vault-monitoring/vault-config \
+/tmp/vault-monitoring/promtail-config \
+/tmp/vault-monitoring/grafana-config \
+/tmp/vault-monitoring/loki-config
+```
+
+### 2. Задайте переменные VAULT_ADDR=http://127.0.0.1:8200 и VAULT_HOME=/tmp/vault-monitoring. Создайте файл server.hcl в папке /tmp/vault-monitoring/vault-config с описанием конфигурации сервера Vault
+```
+api_addr  = "http://0.0.0.0:8200"
+
+listener "tcp" {
+  address     = "0.0.0.0:8200"
+  tls_disable = "true"
+}
+
+storage "file" {
+  path = "/vault/data"
+}
+
+telemetry {
+  disable_hostname = true
+  prometheus_retention_time = "12h"
+}
+```
+
+`export VAULT_ADDR=http://127.0.0.1:8200 && export VAULT_HOME=/tmp/vault-monitoring`
+
+
+```
+cat >  $VAULT_HOME/vault-config/server.hcl << EOF
 
 api_addr  = "http://0.0.0.0:8200"
 
@@ -560,7 +591,11 @@ telemetry {
   disable_hostname = true
   prometheus_retention_time = "12h"
 }
-Запустите Vault в docker контейнере. Инициализируйте его, рут токен сохраните по пути /home/user/root_token. Настройте Audit Device для записи в файл /vault/logs/vault_audit.log
+EOF
+```
+
+### 3. Запустите Vault в docker контейнере. Инициализируйте его, рут токен сохраните по пути /home/user/root_token. Настройте Audit Device для записи в файл /vault/logs/vault_audit.log
+```
 docker run \
   --cap-add=IPC_LOCK \
   -d \
@@ -570,7 +605,12 @@ docker run \
   --volume vault:/vault \
   --volume logs:/vault/logs \
   vault server
-Настройте контейнер Loki для приема лог-стримов и запустите его. Файл конфига разместите по пути $VAULT_HOME/loki-config/loki-config.yaml.
+```
+`docker logs vault`
+
+
+### 4. Настройте контейнер Loki для приема лог-стримов и запустите его. Файл конфига разместите по пути $VAULT_HOME/loki-config/loki-config.yaml.
+```
 auth_enabled: false
 
 server:
@@ -638,13 +678,17 @@ ruler:
     kvstore:
       store: inmemory
   enable_api: true
+```
+```
 docker run \
     -d \
     --name loki \
     -p 3100:3100 \
     --volume $VAULT_HOME/loki-config:/tmp/loki-config \
     grafana/loki -config.file=/tmp/loki-config/loki-config.yaml
-Настройте контейнер Promtail для забора лог-файлов и отправки его в Loki (не забудьте указать ip адрес контейнера loki для пуша логов). Файл конфига разместите по пути $VAULT_HOME/promtail-config/promtail-config.yaml
+```
+### 5. Настройте контейнер Promtail для забора лог-файлов и отправки его в Loki (не забудьте указать ip адрес контейнера loki для пуша логов). Файл конфига разместите по пути $VAULT_HOME/promtail-config/promtail-config.yaml
+```
 server:
   http_listen_port: 9080
   grpc_listen_port: 0
@@ -663,13 +707,17 @@ scrape_configs:
     labels:
       job: varlogs
       __path__: /opt/log/*log
+```
+```
 docker run \
   -d \
   --name promtail \
   --volume logs:/opt/log \
   --volume $VAULT_HOME/promtail-config:/tmp/promtail \
   grafana/promtail -config.file=/tmp/promtail/promtail-config.yaml
-Добавьте Loki data source для Grafana
+```
+### 6. Добавьте Loki data source для Grafana
+```
 apiVersion: 1
 
 datasources:
@@ -696,13 +744,16 @@ datasources:
     tlsClientKey: ""
   version: 1
   editable: true
-Создайте дашборд для мониторинга логов. Возможно вам будет необходимо поменять все Datasource UID. Для того, чтобы узнать актуальный datasource uid, зайдите по пути Configuration -> Data Soruces -> Loki. Кликнув на него, в адресной строке увидите его uid. Например: http://<ip>/datasources/edit/<datasource uid>. В дашборде замените все значения следующей структуры на актуальные.
+```
+### 7. Создайте дашборд для мониторинга логов. Возможно вам будет необходимо поменять все Datasource UID. Для того, чтобы узнать актуальный datasource uid, зайдите по пути Configuration -> Data Soruces -> Loki. Кликнув на него, в адресной строке увидите его uid. Например: http://<ip>/datasources/edit/<datasource uid>. В дашборде замените все значения следующей структуры на актуальные.
+```
 "datasource": {
   "type": "loki",
   "uid": "P8E80F9AEF21F6940"
 }
+```
 Текст дашборда
-
+```
 {
   "annotations": {
     "list": [
@@ -982,3 +1033,4 @@ datasources:
   "version": 2,
   "weekStart": ""
 }
+```
