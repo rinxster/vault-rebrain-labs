@@ -80,7 +80,7 @@ docker run \
   vault server
 ```
 
-`docker logs `
+`docker logs vault`
 
 ```
 vault operator init -key-shares=1 -key-threshold=1 \
