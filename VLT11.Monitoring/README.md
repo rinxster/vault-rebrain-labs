@@ -138,14 +138,14 @@ vault token create \
 ```
 scrape_configs:
 - job_name: vault
-    metrics_path: /v1/sys/metrics
-    params:
-      format: ['prometheus']
-    scheme: http
-    authorization:
-      credentials_file: /etc/prometheus/prometheus-token
-    static_configs:
-    - targets: ['<vault_docker_ip_addr>:8200']
+  metrics_path: /v1/sys/metrics
+  params:
+    format: ['prometheus']
+  scheme: http
+  authorization:
+    credentials_file: /etc/prometheus/prometheus-token
+  static_configs:
+  - targets: ['<vault_docker_ip_addr>:8200']
 ```
 
 ```
