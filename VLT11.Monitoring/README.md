@@ -132,6 +132,7 @@ vault token create \
 
 `grep 'Initial Root Token' $VAULT_HOME/.vault-init | awk '{print $NF}' > /home/user/root_token`
 
+`cat /home/user/root_token`
 
 
 ### 5. Создайте файл конфигурации prometheus по пути $VAULT_HOME/prometheus-config/prometheus.yml. Не забудьте поменять ip Vault.
