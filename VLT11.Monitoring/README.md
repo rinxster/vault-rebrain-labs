@@ -110,6 +110,16 @@ path  "/sys/internal/counters/activity" {
 
 EOF
 ```
+Альтернативный вариант политики
+```
+ vault policy write prometheus-metrics - << EOF
+path "/sys/metrics" {
+  capabilities = ["read"]
+}
+EOF
+```
+
+
 
 `vault policy list`
 
