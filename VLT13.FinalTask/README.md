@@ -43,26 +43,127 @@ kubectl delete storageclass standard
 kubectl apply -f kubevirt-hostpath-provisioner.yaml
 ```
 ### 6. Ниже представлен Helm чарт для развертывания 3 инстансов Vault на трех нодах в кластере Kubernetes. Вам необходимо по пути server.ha.config дописать конфиг Vault, удовлетворяющий следующим условиям:
-* UI активирован
-* listener tcp:
+- UI активирован
+- listener tcp:
   - tls отключен
   - прослушивает порт 8200 на всех интерфейсах (IPv4 и IPv6)
   - назначить адрес кластера на порту 8201
-* в telemetry включить доступ к метрикам без авторизации
-Настроить raft
-по пути /vault/data
-Автопилот
-cleanup_dead_servers = "true"
-last_contact_threshold = "200ms"
-last_contact_failure_threshold = "10m"
-max_trailing_logs = 250000
-min_quorum = 5
-server_stabilization_time = "10s"
-Телеметрия
-Prometheus хранит данные 24 часа
-Отключить hostname
-Зарегестрировать сервис kubernetes
+- в telemetry включить доступ к метрикам без авторизации
+- Настроить raft
+- по пути /vault/data
+- Автопилот
+- cleanup_dead_servers = "true"
+- last_contact_threshold = "200ms"
+- last_contact_failure_threshold = "10m"
+- max_trailing_logs = 250000
+- min_quorum = 5
+- server_stabilization_time = "10s"
+- Телеметрия
+  - Prometheus хранит данные 24 часа
+- Отключить hostname
+- Зарегистрировать сервис kubernetes
 vault-helm-config.yaml
+
+<details>
+  <summary>vault-helm-config.yaml</summary>
+  <p>
+
+global:
+  enabled: true
+  tlsDisable: true
+  serverTelemetry:
+    prometheusOperator: true
+
+injector:
+  enabled: true
+  image:
+    repository: "hashicorp/vault-k8s"
+    tag: "latest"
+
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 250m
+    limits:
+      memory: 256Mi
+      cpu: 250m
+
+  metrics:
+    enabled: true
+
+server:
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 500m
+    limits:
+      memory: 256Mi
+      cpu: 500m
+
+  readinessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true&sealedcode=204&uninitcode=204"
+  livenessProbe:
+    enabled: false
+    path: "/v1/sys/health?standbyok=true"
+    initialDelaySeconds: 60
+
+  auditStorage:
+    enabled: true
+    size: 1Gi
+    storageClass: standard
+
+  dataStorage:
+    enabled: true
+    storageClass: standard
+
+  standalone:
+    enabled: false
+
+  ha:
+    enabled: true
+    replicas: 3
+    raft:
+      enabled: true
+      setNodeId: true
+
+      config: |
+        ui = true
+        listener "tcp" {
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
+          telemetry {
+            unauthenticated_metrics_access = "true"
+          }
+          tls_disable = 1
+        }
+        storage "raft" {
+          path = "/vault/data"
+          autopilot {
+            cleanup_dead_servers = "true"
+            last_contact_threshold = "200ms"
+            last_contact_failure_threshold = "10m"
+            max_trailing_logs = 250000
+            min_quorum = 5
+            server_stabilization_time = "10s"
+          }
+        }
+        telemetry {
+          prometheus_retention_time = "24h"
+          disable_hostname = true
+        }
+        service_registration "kubernetes" {}
+
+ui:
+  enabled: true
+  serviceType: "NodePort"
+  externalPort: 8200
+  targetPort: 8200
+
+ingress:
+  enabled: false
+  </p>
+</details>
 ### 7. Разверните кластер
 ```
 helm install -n vault vault ./vault-custom -f vault-helm-config.yaml
