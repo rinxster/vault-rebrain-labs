@@ -62,11 +62,9 @@ kubectl apply -f kubevirt-hostpath-provisioner.yaml
   - Prometheus хранит данные 24 часа
 - Отключить hostname
 - Зарегистрировать сервис kubernetes
-vault-helm-config.yaml
 
-<details>
-  <summary>vault-helm-config.yaml</summary>
-  <p>
+vault-helm-config.yaml
+```
 
 global:
   enabled: true
@@ -162,8 +160,8 @@ ui:
 
 ingress:
   enabled: false
-  </p>
-</details>
+```
+
 ### 7. Разверните кластер
 ```
 helm install -n vault vault ./vault-custom -f vault-helm-config.yaml
