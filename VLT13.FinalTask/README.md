@@ -44,11 +44,11 @@ kubectl apply -f kubevirt-hostpath-provisioner.yaml
 ```
 ### 6. Ниже представлен Helm чарт для развертывания 3 инстансов Vault на трех нодах в кластере Kubernetes. Вам необходимо по пути server.ha.config дописать конфиг Vault, удовлетворяющий следующим условиям:
 * UI активирован
-* listener tcp
-** tls отключен
-прослушивает порт 8200 на всех интерфейсах (IPv4 и IPv6)
-назначить адрес кластера на порту 8201
-в telemetry включить доступ к метрикам без авторизации
+* listener tcp:
+  - tls отключен
+  - прослушивает порт 8200 на всех интерфейсах (IPv4 и IPv6)
+  - назначить адрес кластера на порту 8201
+* в telemetry включить доступ к метрикам без авторизации
 Настроить raft
 по пути /vault/data
 Автопилот
@@ -63,17 +63,21 @@ Prometheus хранит данные 24 часа
 Отключить hostname
 Зарегестрировать сервис kubernetes
 vault-helm-config.yaml
-Разверните кластер
+### 7. Разверните кластер
+```
 helm install -n vault vault ./vault-custom -f vault-helm-config.yaml
-Инициализируйте vault на поде vault-0 с 3 ключами, любые два из которых распечатывают Vault. Сохраните root-token по пути /home/user/root_token
+```
+### 8. Инициализируйте vault на поде vault-0 с 3 ключами, любые два из которых распечатывают Vault. Сохраните root-token по пути /home/user/root_token
 
 Подключите raft для vault-1 и vault-2. Url для vault-0 в кластере http://vault-0.vault-internal:8200
 
-Настройка autounseal
-Активируйте transit autounseal на vault-0
-Создайте политику autounseal, токен для которой позволит выполнять autounseal
-Сгенерируйте orphan токен для политики autounseal с периодом 24 часа
-Ниже представлен helm сhart для инстанса vault, используемого для autounseal. Напишите конфиг vault для autounseal. Файл vault-auto-unseal-helm-values.yml
+## Настройка autounseal
+
+### 10. Активируйте transit autounseal на vault-0
+### 11. Создайте политику autounseal, токен для которой позволит выполнять autounseal
+### 12. Сгенерируйте orphan токен для политики autounseal с периодом 24 часа
+### 13. Ниже представлен helm сhart для инстанса vault, используемого для autounseal. Напишите конфиг vault для autounseal. Файл vault-auto-unseal-helm-values.yml
+```
 global:
   enabled: true
 injector:
@@ -83,15 +87,19 @@ server:
     enabled: true
     config: |
       <vault autounseal config>
-Установите чарт
+```
+### 14. Установите чарт
+```
 helm install -n vault-a vault ./vault-custom -f vault-auto-unseal-helm-values.yml\
 kubectl -n vault-a exec -it vault-0 -- vault operator init | cat > .vault-recovery
-User-pass авторизация
-Инициализируйте секреты по путям prod, stage, dev и разрешите userpass
+```
 
-Создайте политику secret-admin-policy, которая будет удовлетворять следующим условиям:
+## User-pass авторизация
+### 15. Инициализируйте секреты по путям prod, stage, dev и разрешите userpass
 
-по пути "auth/*" будут доступны следующие разрешения: все, кроме patch и deny
+### 16.Создайте политику secret-admin-policy, которая будет удовлетворять следующим условиям:
+
+* по пути "auth/*" будут доступны следующие разрешения: все, кроме patch и deny
 по пути "sys/auth/*" будут доступны: "create", "update", "delete", "sudo"
 по пути "sys/auth" будет доступно только чтение: "read"
 по пути "sys/policies/acl" только листинг ACL: "list"
