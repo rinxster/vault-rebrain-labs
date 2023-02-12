@@ -108,50 +108,59 @@ kubectl -n vault-a exec -it vault-0 -- vault operator init | cat > .vault-recove
 
 ### 17. Создайте политику developer, удовлетворяющую следующим условиям:
 
-по пути "prod/*" - "read", "create", "update"
-по пути "stage/*" - "read", "create", "update"
-по пути "dev/*" - "read", "create", "update"
-Создайте политику junior, удовлетворяющую следующим условиям:
+- по пути "prod/*" - "read", "create", "update"
+- по пути "stage/*" - "read", "create", "update"
+- по пути "dev/*" - "read", "create", "update"
+
+### 18. Создайте политику junior, удовлетворяющую следующим условиям:
 
 по пути "stage/*" - "read", "create", "update"
-Создайте пользователей:
 
-admin c паролем nimda и ранее созданной политикой admin
-developer c паролем ved и ранее созданной политикой developer
-junior с паролем roinuj и ранее созданой политикой junior.
-PKI
-Активируйте PKI по пути rebrain-pki, max=lease=ttl=8760h
-Скачайте наш сертификат по ссылке bundle.pem
-Запишите скачанный сертификат по пути rebrain-pki/config/ca
-Создайте роль rebrain-pki/roles/local-certs для создания сертификата со следующими параметрами:
-max_ttl 24 часа
-localhost запрещен
-разрешенный домен myapp.st_login.rebrain.me
-разрешить bare domain
-запретить поддомены
-запретить wildcard сертификаты
-запретить ip sans
-Создайте политику cert-issue-policy, которая будет удовлетворять следующим условиям:
+### 19. Создайте пользователей:
 
-по пути "rebrain-pki*" - "read", "list"
-по пути "rebrain-pki/sign/local-certs" - "create", "update"
-по пути "rebrain-pki/issue/local-certs" - "create"
-Активируйте аутентификацию kubernetes. В качестве хоста используйте https://$KUBERNETES_PORT_443_TCP_ADDR:443
+- admin c паролем nimda и ранее созданной политикой admin
+- developer c паролем ved и ранее созданной политикой developer
+- junior с паролем roinuj и ранее созданой политикой junior.
 
-Создайте роль auth/kubernetes/role/issuer с политикой cert-issue-policy, к которой могут обращаться только сервисные аккаунты с именем issuer из пространства имен default, ttl=20m.
+## PKI
 
-Скачайте и установите cert-manager
+### 20. Активируйте PKI по пути rebrain-pki, max=lease=ttl=8760h
 
+### 21. Скачайте наш сертификат по ссылке bundle.pem
+
+### 22. Запишите скачанный сертификат по пути rebrain-pki/config/ca
+
+### 23. Создайте роль rebrain-pki/roles/local-certs для создания сертификата со следующими параметрами:
+- max_ttl 24 часа
+- localhost запрещен
+- разрешенный домен myapp.st_login.rebrain.me
+- разрешить bare domain
+- запретить поддомены
+- запретить wildcard сертификаты
+- запретить ip sans
+
+### 24. Создайте политику cert-issue-policy, которая будет удовлетворять следующим условиям:
+- по пути "rebrain-pki*" - "read", "list"
+- по пути "rebrain-pki/sign/local-certs" - "create", "update"
+- по пути "rebrain-pki/issue/local-certs" - "create"
+
+### 25. Активируйте аутентификацию kubernetes. В качестве хоста используйте https://$KUBERNETES_PORT_443_TCP_ADDR:443
+
+### 26. Создайте роль auth/kubernetes/role/issuer с политикой cert-issue-policy, к которой могут обращаться только сервисные аккаунты с именем issuer из пространства имен default, ttl=20m.
+
+### 27. Скачайте и установите cert-manager
+```
 kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.9.1/cert-manager.crds.yaml
 
 helm install cert-manager \
     --namespace cert-manager \
     --version v1.9.1 \
    jetstack/cert-manager
-Создайте в kubernetes сервисный аккаунт issuer
+```   
+### 28. Создайте в kubernetes сервисный аккаунт issuer
 Добавьте секрет в kubernetes и настройте certmanager
 issuer-secret.yaml
-
+```
 apiVersion: v1
 kind: Secret
 metadata:
@@ -159,6 +168,8 @@ metadata:
   annotations:
     kubernetes.io/service-account.name: issuer
 type: kubernetes.io/service-account-token
+```
+```
 kubectl apply -f issuer-secret.yaml
 
 export ISSUER_SECRET_REF=$(kubectl get secrets --output=json | jq -r '.items[].metadata | select(.name|startswith("issuer-token-")).name')
@@ -200,13 +211,17 @@ spec:
 EOF
 
 kubectl apply --filename myapp-cert.yaml
-Мониторинг
-Измените тип сервисов prometheus и grafana в пространстве имен monitoring с ClusterIP на NodePort
+```
+## Мониторинг
+### 30. Измените тип сервисов prometheus и grafana в пространстве имен monitoring с ClusterIP на NodePort
+```
 kubectl edit svc -n monitoring prometheus-kube-prometheus-prometheus
 kubectl edit svc -n monitoring prometheus-grafana
+```
 Данные для подключения к графане UserName: admin Password: prom-operator
 
-Создайте файл с настройками для Helm чарта loki-stack-values.yml
+### 31. Создайте файл с настройками для Helm чарта loki-stack-values.yml
+```
 loki:
  enabled: true
  persistence:
@@ -225,18 +240,22 @@ promtail:
 
 grafana:
  enabled: false
-Разверните helm chart
+``` 
+### 32. Разверните helm chart
+```
 helm install loki grafana/loki-stack -n monitoring -f ~/loki-stack-values.yml
-Настройте vault для логгирования в stdout
+```
+### 33.Настройте vault для логгирования в stdout
 Можете выполнить port-forwarding для настройки графаны снаружи
-
+```
 kubectl port-forward -n monitoring svc/prometheus-grafana --address=0.0.0.0 3000:80
-Сконфигурируйте dashboard grafana для произвольных метрик vault.
-Отправьте на проверку куратору скриншоты Garafana:
+```
+### 34. Сконфигурируйте dashboard grafana для произвольных метрик vault.
 
-настроек Data Source Loki и Prometheus
-Дашборд мониторинга Prometheus.
-Дашборд логов Loki.
+Отправьте на проверку куратору скриншоты Garafana:
+1. настроек Data Source Loki и Prometheus
+2. Дашборд мониторинга Prometheus.
+3. Дашборд логов Loki.
 Мы не ограничиваем в количестве панелей в дашбордах Loki и Prometheus, хотя бы 2-3 панели в каждом дашборде должно быть.
 
 Перед отправкой задания на проверку убедитесь, что все инстансы vault открыты и запущены
