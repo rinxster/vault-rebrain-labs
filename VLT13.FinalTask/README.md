@@ -99,13 +99,14 @@ kubectl -n vault-a exec -it vault-0 -- vault operator init | cat > .vault-recove
 
 ### 16.Создайте политику secret-admin-policy, которая будет удовлетворять следующим условиям:
 
-* по пути "auth/*" будут доступны следующие разрешения: все, кроме patch и deny
-по пути "sys/auth/*" будут доступны: "create", "update", "delete", "sudo"
-по пути "sys/auth" будет доступно только чтение: "read"
-по пути "sys/policies/acl" только листинг ACL: "list"
-по путям "sys/policies/acl/", "secret/", "prod/*", "stage/*", "dev/*", "sys/mounts*": все, кроме patch и deny
-по пути "sys/health" следующие разрешения: "read", "sudo"
-Создайте политику developer, удовлетворяющую следующим условиям:
+- по пути "auth/*" будут доступны следующие разрешения: все, кроме patch и deny
+- по пути "sys/auth/*" будут доступны: "create", "update", "delete", "sudo"
+- по пути "sys/auth" будет доступно только чтение: "read"
+- по пути "sys/policies/acl" только листинг ACL: "list"
+- по путям "sys/policies/acl/", "secret/", "prod/*", "stage/*", "dev/*", "sys/mounts*": все, кроме patch и deny
+- по пути "sys/health" следующие разрешения: "read", "sudo"
+
+### 17. Создайте политику developer, удовлетворяющую следующим условиям:
 
 по пути "prod/*" - "read", "create", "update"
 по пути "stage/*" - "read", "create", "update"
