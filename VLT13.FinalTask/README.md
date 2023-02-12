@@ -11,7 +11,7 @@
 ### 1. Запустите minikube. Создайте необходимые namespaces
 ```
 sudo sysctl -w fs.inotify.max_user_instances=8192
-minikube start --driver docker --nodes 3
+minikube start --driver=docker --nodes 3
 kubectl create ns vault
 kubectl create ns vault-a
 kubectl create ns monitoring
