@@ -244,7 +244,7 @@ vault auth enable -path prod userpass && vault auth enable -path stage userpass 
 
 ```
 
-vault policy write -tls-skip-verify secret-admin-policy - << EOF
+vault policy write -tls-skip-verify admin - << EOF
 
 path "auth/*" {
   capabilities = ["create", "read", "update", "delete", "list"]
@@ -341,18 +341,20 @@ EOF
 - junior с паролем roinuj и ранее созданой политикой junior.
 
 ```
-vault write auth/users/admin policies=secret-admin-policy password=nimda
-vault write auth/users/developer policies=developer password=ved
-vault write auth/users/junior policies=junior password=roinuj
+vault write auth/userpass/users/admin policies=admin password=nimda
+vault write auth/userpass/users/dev policies=developer password=ved
+vault write auth/userpass/users/junior policies=junior password=roinuj
+```
 
-vault write auth/userpass/users/mitchellh \
-    password=foo \
-    policies=admins
-
-
-vault write auth/userpass/users/admin policies=secret-admin-policy password=nimda
-vault write auth/userpass/users/developer policies=developer password=ved
-vault write auth/userpass/users/junior policies=juniory password=roinuj
+```
+Vault установлен: OK
+Raft настроен верно: OK
+Пользователь admin не использует необходимые политики: FAILED
+Пользователь dev использует необходимые политики: OK
+Пользователь junior использует необходимые политики: OK
+Vault открылся после перезапуска: OK
+Ошибка проверки роли local-certs: FAILED
+Политика cert-issue-policy прошла проверку: OK
 ```
 
 ## PKI
