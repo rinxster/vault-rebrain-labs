@@ -169,12 +169,20 @@ helm install -n vault vault ./vault-custom -f vault-helm-config.yaml
 ### 8. Инициализируйте vault на поде vault-0 с 3 ключами, любые два из которых распечатывают Vault. Сохраните root-token по пути /home/user/root_token
 
 Подключите raft для vault-1 и vault-2. Url для vault-0 в кластере http://vault-0.vault-internal:8200
+```
+```
 
 ## Настройка autounseal
 
 ### 10. Активируйте transit autounseal на vault-0
+```
+```
 ### 11. Создайте политику autounseal, токен для которой позволит выполнять autounseal
+```
+```
 ### 12. Сгенерируйте orphan токен для политики autounseal с периодом 24 часа
+```
+```
 ### 13. Ниже представлен helm сhart для инстанса vault, используемого для autounseal. Напишите конфиг vault для autounseal. Файл vault-auto-unseal-helm-values.yml
 ```
 global:
