@@ -183,6 +183,18 @@ echo VAULT_TOKEN >> /home/user/root_token
 vault operator unseal
 ```
 ```
+a. открываем консоль k9s
+b. выбираем все неймспейсы(клавиша 0)
+c. выбираем под "vault-0"
+d. нажимаем "s" - в результате он в него заходит внутрь консоли
+e. внутри пода выполняем команду: export VAULT_SKIP_VERIFY=true && vault operator init -key-shares=1 -key-threshold=1
+f. export VAULT_TOKEN=<ваш токен>
+g. vault operator unseal <ваш ключ unseal>
+h. проверяем результат: vault status
+i. выходим из пода и повторяем входим в под "vault-1"(пункты a-d)
+j. выполняем команду: export VAULT_SKIP_VERIFY=true && export VAULT_TOKEN=<ваш токен> && vault operator raft join "http://vault-0.vault-internal:8200"
+k. проверяем результат командой: vault operator raft list-peers
+l. повторяем пункты i-k для "vault-2"
 ```
 
 ## Настройка autounseal
