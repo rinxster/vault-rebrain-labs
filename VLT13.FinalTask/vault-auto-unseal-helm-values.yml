@@ -1,0 +1,29 @@
+global:
+  enabled: true
+  tlsDisable: true
+  serverTelemetry:
+    prometheusOperator: true
+injector:
+  enabled: "false"
+server:
+  standalone:
+    enabled: true
+    config: |
+      disable_mlock = true
+      ui=true
+
+      storage "file" {
+        path = "/vault/data"
+      }
+
+      listener "tcp" {
+        address = "[::]:8200"
+        tls_disable = "true"
+      }
+      seal "transit" {
+          address            = "http://10.244.0.4:8200"
+          token              = "hvs.CAESICJRetFgTnuUKhWDiFhJBQVv87Mn5jarceH43fhUGsbbGh4KHGh2cy5yaXZYR2VtUzZpZE5PMFBwOEw0QWZKZWs"
+          key_name           = "autounseal"
+          mount_path         = "transit/"
+          tls_skip_verify    = "true"
+      }

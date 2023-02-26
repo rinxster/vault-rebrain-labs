@@ -216,12 +216,37 @@ vault-2    vault-2.vault-internal:8201    follower    true
 ## Настройка autounseal
 https://developer.hashicorp.com/vault/tutorials/auto-unseal/autounseal-transit
 
-### 10. Активируйте transit autounseal на vault-0
-```
-монтируем транзит: vault secrets enable -path=transit-autounseal transit
+<details>
+  <summary>альтернативный вариант - разобрать</summary>
+  
+**п.9 Активировать transit autounseal на vault-0**
 
-создаём ключ: vault write -f transit-autounseal/keys/vault-autounseal
-```
+`kubectl port-forward vault-0 -n vault 8200:8200`
+
+`export VAULT_ADDR=http://127.0.0.1:8200`
+
+`vault login`
+
+`vault secrets enable transit`
+
+`vault write -f transit/keys/autounseal`
+
+**п.10 Создать политику autounseal, токен для которой позволит выполнять autounseal**
+
+`vault policy write autounseal autounseal-policy.hcl`
+
+**п.11 Сгенерируйте orphan токен для политики autounseal с периодом 24 часа**
+
+`vault token create -orphan -policy="autounseal" -period=24h`
+
+**п.12 Написать конфиг vault для autounseal в файл `vault-auto-unseal-helm-values.yml` и установить чарт**
+
+`helm install -n vault-a vault ./vault-custom -f vault-auto-unseal-helm-values.yml \ `
+
+`kubectl -n vault-a exec -it vault-0 -- vault operator init | cat > .vault-recovery`
+</details>
+
+### 10. Активируйте transit autounseal на vault-0
 
 ```
 vault secrets enable transit
@@ -241,14 +266,13 @@ path "transit/decrypt/autounseal" {
 }
 EOF
 
+
 vault policy write autounseal autounseal.hcl
 
 ```
 ### 12. Сгенерируйте orphan токен для политики autounseal с периодом 24 часа
 ```
-
 vault token create -orphan -policy="autounseal" -period=24h
-
 ```
 ### 13. Ниже представлен helm сhart для инстанса vault, используемого для autounseal. Напишите конфиг vault для autounseal. Файл vault-auto-unseal-helm-values.yml
 ```
