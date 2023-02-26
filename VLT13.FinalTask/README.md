@@ -183,7 +183,6 @@ echo VAULT_TOKEN >> /home/user/root_token
 vault operator unseal
 ```
 ```
-helm install -n vault vault ./vault-custom -f vault-helm-config.yaml
 ```
 
 ## Настройка autounseal
