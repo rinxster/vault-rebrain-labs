@@ -17,7 +17,10 @@
 /vault/storage/node3
 ```
 
-'sudo mkdir /vault && sudo mkdir /vault/cert && sudo mkdir /vault/config && sudo mkdir /vault/storage/node1 && sudo mkdir /vault/storage/node2 && sudo  mkdir /vault/storage/node3'
+```
+sudo mkdir /vault && sudo mkdir /vault/cert && sudo mkdir /vault/config && sudo mkdir /vault/storage/node1 && sudo mkdir /vault/storage/node2 && sudo  mkdir /vault/storage/node3
+```
+
 
 ###  2. В каталог /vault/cert поместите сертификаты:
 ca.pem 
