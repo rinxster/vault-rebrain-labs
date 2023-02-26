@@ -211,7 +211,10 @@ vault-2    vault-2.vault-internal:8201    follower    true
 
 ```
 
+
+
 ## Настройка autounseal
+https://developer.hashicorp.com/vault/tutorials/auto-unseal/autounseal-transit
 
 ### 10. Активируйте transit autounseal на vault-0
 ```
@@ -257,14 +260,18 @@ server:
     config: |
       seal "transit" {
         address            = "http://vault-0.vault-internal:8200"
-        token              = "hvs.CAESIAs37fvdlVeZqu2mp7G2KUl03ytNL9uw3lplVwNvJPR5Gh4KHGh2cy5lQUFyMTJwRjlxUWxGMWJGYlRheXU3bUw"
+        token              = "hvs.CAESIFansfO7fb3vWN5oOy-LC4DbRIhKeYd4UqFobyerwmOqGh4KHGh2cy52RUlacWtWRFlVcFp1NVpHY3RsTmpYMXE"
         key_name           = "vault-autounseal"
         mount_path         = "transit-autounseal"
         tls_skip_verify    = "true"
       }
 ```
+```
+export VAULT_SKIP_VERIFY=true 
+export VAULT_ADDR=http://192.168.49.2:31297
+export VAULT_TOKEN=hvs.SySNVTHujEOVGxdd6TNctitq
 
-
+```
 ### 14. Установите чарт
 ```
 helm install -n vault-a vault ./vault-custom -f vault-auto-unseal-helm-values.yml\
