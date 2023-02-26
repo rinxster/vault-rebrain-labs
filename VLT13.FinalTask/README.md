@@ -196,6 +196,10 @@ kubectl -n vault-a exec -it vault-0 -- vault operator init | cat > .vault-recove
 ## User-pass авторизация
 ### 15. Инициализируйте секреты по путям prod, stage, dev и разрешите userpass
 
+```
+vault auth enable -path prod userpass && vault auth enable -path stage userpass && vault auth enable -path pdev userpass
+```
+
 ### 16.Создайте политику secret-admin-policy, которая будет удовлетворять следующим условиям:
 
 - по пути "auth/*" будут доступны следующие разрешения: все, кроме patch и deny
@@ -205,15 +209,97 @@ kubectl -n vault-a exec -it vault-0 -- vault operator init | cat > .vault-recove
 - по путям "sys/policies/acl/", "secret/", "prod/*", "stage/*", "dev/*", "sys/mounts*": все, кроме patch и deny
 - по пути "sys/health" следующие разрешения: "read", "sudo"
 
+```
+
+vault policy write -tls-skip-verify secret-admin-policy - << EOF
+
+path "auth/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+
+path "sys/auth/*" {
+  capabilities = ["create", "update", "delete", "sudo"]
+}
+
+path "sys/auth" {
+  capabilities = ["read"]
+}
+
+path "sys/policies/acl" {
+  capabilities = ["list"]
+}
+
+path "sys/policies/acl/" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+
+path "secret/" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+
+path "prod/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+
+path "stage/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+
+path "dev/*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+
+path "sys/mounts*" {
+  capabilities = ["create", "read", "update", "delete", "list"]
+}
+
+path "sys/health" {
+  capabilities = ["read", "sudo"]
+}
+
+
+EOF
+```
+
 ### 17. Создайте политику developer, удовлетворяющую следующим условиям:
 
 - по пути "prod/*" - "read", "create", "update"
 - по пути "stage/*" - "read", "create", "update"
 - по пути "dev/*" - "read", "create", "update"
 
+```
+
+vault policy write -tls-skip-verify developer - << EOF
+
+path "prod/*" {
+  capabilities = ["create", "read", "update"]
+}
+
+path "stage/*" {
+  capabilities = ["create", "read", "update"]
+}
+
+path "dev/*" {
+  capabilities = ["create", "read", "update"]
+}
+
+EOF
+```
+
+
 ### 18. Создайте политику junior, удовлетворяющую следующим условиям:
 
 по пути "stage/*" - "read", "create", "update"
+
+```
+vault policy write -tls-skip-verify junior - << EOF
+
+path "stage/*" {
+  capabilities = ["create", "read", "update"]
+}
+
+EOF
+```
 
 ### 19. Создайте пользователей:
 
