@@ -230,7 +230,7 @@ kubectl -n vault-a exec -it vault-0 -- vault operator init | cat > .vault-recove
 ### 15. Инициализируйте секреты по путям prod, stage, dev и разрешите userpass
 
 ```
-vault auth enable -path prod userpass && vault auth enable -path stage userpass && vault auth enable -path pdev userpass
+vault auth enable -path prod userpass && vault auth enable -path stage userpass && vault auth enable -path dev userpass
 ```
 
 ### 16.Создайте политику secret-admin-policy, которая будет удовлетворять следующим условиям:
@@ -341,10 +341,18 @@ EOF
 - junior с паролем roinuj и ранее созданой политикой junior.
 
 ```
-vault write auth/corp-auth/users/admin policies=secret-admin-policy password=nimda
-vault write auth/corp-auth/users/developer policies=developer password=ved
-vault write auth/corp-auth/users/junior policies=junior password=roinuj
+vault write auth/users/admin policies=secret-admin-policy password=nimda
+vault write auth/users/developer policies=developer password=ved
+vault write auth/users/junior policies=junior password=roinuj
 
+vault write auth/userpass/users/mitchellh \
+    password=foo \
+    policies=admins
+
+
+vault write auth/userpass/users/admin policies=secret-admin-policy password=nimda
+vault write auth/userpass/users/developer policies=developer password=ved
+vault write auth/userpass/users/junior policies=juniory password=roinuj
 ```
 
 ## PKI
