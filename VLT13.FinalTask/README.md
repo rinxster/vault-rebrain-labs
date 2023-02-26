@@ -193,8 +193,22 @@ g. vault operator unseal <ваш ключ unseal>
 h. проверяем результат: vault status
 i. выходим из пода и повторяем входим в под "vault-1"(пункты a-d)
 j. выполняем команду: export VAULT_SKIP_VERIFY=true && export VAULT_TOKEN=<ваш токен> && vault operator raft join "http://vault-0.vault-internal:8200"
-k. проверяем результат командой: vault operator raft list-peers
-l. повторяем пункты i-k для "vault-2"
+k. vault operator unseal <ваш ключ unseal>
+l. проверяем результат командой: vault operator raft list-peers
+m. повторяем пункты i-l для "vault-2"
+
+
+```
+
+```
+пример вывода команды по результатам
+/ $ vault operator raft list-peers
+Node       Address                        State       Voter
+----       -------                        -----       -----
+vault-0    vault-0.vault-internal:8201    leader      true
+vault-1    vault-1.vault-internal:8201    follower    true
+vault-2    vault-2.vault-internal:8201    follower    true
+
 ```
 
 ## Настройка autounseal
@@ -233,13 +247,21 @@ server:
 ```
 
 ```
-seal "transit" {
-  address            = "http://vault-0.vault-internal:8200"
-  token              = "hvs.CAESIAs37fvdlVeZqu2mp7G2KUl03ytNL9uw3lplVwNvJPR5Gh4KHGh2cy5lQUFyMTJwRjlxUWxGMWJGYlRheXU3bUw"
-  key_name           = "vault-autounseal"
-  mount_path         = "transit-autounseal"
-  tls_skip_verify    = "true"
-}
+global:
+  enabled: true
+injector:
+  enabled: "false"
+server:
+  standalone:
+    enabled: true
+    config: |
+      seal "transit" {
+        address            = "http://vault-0.vault-internal:8200"
+        token              = "hvs.CAESIAs37fvdlVeZqu2mp7G2KUl03ytNL9uw3lplVwNvJPR5Gh4KHGh2cy5lQUFyMTJwRjlxUWxGMWJGYlRheXU3bUw"
+        key_name           = "vault-autounseal"
+        mount_path         = "transit-autounseal"
+        tls_skip_verify    = "true"
+      }
 ```
 
 
