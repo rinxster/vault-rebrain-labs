@@ -326,9 +326,24 @@ vault write auth/corp-auth/users/junior policies=junior password=roinuj
 
 ### 20. Активируйте PKI по пути rebrain-pki, max=lease=ttl=8760h
 
+```
+vault secrets enable -path=rebrain-pki -max-lease-ttl=8760h pki
+```
+
+
 ### 21. Скачайте наш сертификат по ссылке bundle.pem
 
+```
+wget https://storage.yandexcloud.net/files.rebrainme.com/workshops/hashicorp-vault/bundle.pem
+```
+
 ### 22. Запишите скачанный сертификат по пути rebrain-pki/config/ca
+
+```
+vault write rebrain-pki/config/urls issuing_certificates="http://127.0.0.1:8200/v1/pki/ca" crl_distribution_point="http://127.0.0.1:8200/v1/pki/crl"
+
+vault write rebrain-pki/config/ca pem_bundle=@/opt/certs/bundle.pem
+```
 
 ### 23. Создайте роль rebrain-pki/roles/local-certs для создания сертификата со следующими параметрами:
 - max_ttl 24 часа
@@ -339,14 +354,56 @@ vault write auth/corp-auth/users/junior policies=junior password=roinuj
 - запретить wildcard сертификаты
 - запретить ip sans
 
+```
+vault write rebrain-pki/roles/local-certs \
+allowed_domains="myapp.st_login.rebrain.me" \
+allow_subdomains=true \
+allow_wildcard_certificates=false \
+allow_localhost=false \
+allow_glob_domains=true \
+enforce_hostnames=true \
+allow_ip_sans=false \
+allow_client=true \
+period="24h" \
+allow_server=false \
+enforce_hostname=false \
+allow_client=true \
+allow_any_name=true \
+allow_bare_domains=true
+
+```
+
 ### 24. Создайте политику cert-issue-policy, которая будет удовлетворять следующим условиям:
 - по пути "rebrain-pki*" - "read", "list"
 - по пути "rebrain-pki/sign/local-certs" - "create", "update"
 - по пути "rebrain-pki/issue/local-certs" - "create"
 
+```
+vault policy write -tls-skip-verify cert-issue-policy - << EOF
+
+path "rebrain-pki*" {
+  capabilities = ["read", "list"]
+}
+
+path "rebrain-pki/sign/local-certs" {
+  capabilities = ["create", "update"]
+}
+
+path "rebrain-pki/issue/local-certs" {
+  capabilities = ["create"]
+}
+
+EOF
+```
+
+
 ### 25. Активируйте аутентификацию kubernetes. В качестве хоста используйте https://$KUBERNETES_PORT_443_TCP_ADDR:443
+```
+```
 
 ### 26. Создайте роль auth/kubernetes/role/issuer с политикой cert-issue-policy, к которой могут обращаться только сервисные аккаунты с именем issuer из пространства имен default, ttl=20m.
+```
+```
 
 ### 27. Скачайте и установите cert-manager
 ```
