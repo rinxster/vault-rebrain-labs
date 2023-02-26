@@ -201,12 +201,23 @@ l. повторяем пункты i-k для "vault-2"
 
 ### 10. Активируйте transit autounseal на vault-0
 ```
+монтируем транзит: vault secrets enable -path=transit-autounseal transit
+
+создаём ключ: vault write -f transit-autounseal/keys/vault-autounseal
 ```
 ### 11. Создайте политику autounseal, токен для которой позволит выполнять autounseal
 ```
+echo 'path "transit-autounseal/encrypt/vault-autounseal" {
+   capabilities = [ "update" ]
+}
+path "transit-autounseal/decrypt/vault-autounseal" {
+   capabilities = [ "update" ]
+}' | vault policy write transit-autounseal -
 ```
 ### 12. Сгенерируйте orphan токен для политики autounseal с периодом 24 часа
 ```
+vault token create -policy=transit-autounseal -period=24h
+
 ```
 ### 13. Ниже представлен helm сhart для инстанса vault, используемого для autounseal. Напишите конфиг vault для autounseal. Файл vault-auto-unseal-helm-values.yml
 ```
@@ -220,6 +231,18 @@ server:
     config: |
       <vault autounseal config>
 ```
+
+```
+seal "transit" {
+  address            = "http://vault-0.vault-internal:8200"
+  token              = "hvs.CAESIAs37fvdlVeZqu2mp7G2KUl03ytNL9uw3lplVwNvJPR5Gh4KHGh2cy5lQUFyMTJwRjlxUWxGMWJGYlRheXU3bUw"
+  key_name           = "vault-autounseal"
+  mount_path         = "transit-autounseal"
+  tls_skip_verify    = "true"
+}
+```
+
+
 ### 14. Установите чарт
 ```
 helm install -n vault-a vault ./vault-custom -f vault-auto-unseal-helm-values.yml\
