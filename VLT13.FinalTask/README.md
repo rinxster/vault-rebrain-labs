@@ -307,6 +307,13 @@ EOF
 - developer c паролем ved и ранее созданной политикой developer
 - junior с паролем roinuj и ранее созданой политикой junior.
 
+```
+vault write auth/corp-auth/users/admin policies=secret-admin-policy password=nimda
+vault write auth/corp-auth/users/developer policies=developer password=ved
+vault write auth/corp-auth/users/junior policies=junior password=roinuj
+
+```
+
 ## PKI
 
 ### 20. Активируйте PKI по пути rebrain-pki, max=lease=ttl=8760h
