@@ -222,18 +222,32 @@ https://developer.hashicorp.com/vault/tutorials/auto-unseal/autounseal-transit
 
 создаём ключ: vault write -f transit-autounseal/keys/vault-autounseal
 ```
-### 11. Создайте политику autounseal, токен для которой позволит выполнять autounseal
+
 ```
-echo 'path "transit-autounseal/encrypt/vault-autounseal" {
+vault secrets enable transit
+vault write -f transit/keys/autounseal
+```
+
+### 11. Создайте политику autounseal, токен для которой позволит выполнять autounseal
+
+```
+ tee autounseal.hcl <<EOF
+path "transit/encrypt/autounseal" {
    capabilities = [ "update" ]
 }
-path "transit-autounseal/decrypt/vault-autounseal" {
+
+path "transit/decrypt/autounseal" {
    capabilities = [ "update" ]
-}' | vault policy write transit-autounseal -
+}
+EOF
+
+vault policy write autounseal autounseal.hcl
+
 ```
 ### 12. Сгенерируйте orphan токен для политики autounseal с периодом 24 часа
 ```
-vault token create -policy=transit-autounseal -period=24h
+
+vault token create -orphan -policy="autounseal" -period=24h
 
 ```
 ### 13. Ниже представлен helm сhart для инстанса vault, используемого для autounseal. Напишите конфиг vault для autounseal. Файл vault-auto-unseal-helm-values.yml
