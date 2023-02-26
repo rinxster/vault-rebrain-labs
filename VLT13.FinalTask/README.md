@@ -170,6 +170,20 @@ helm install -n vault vault ./vault-custom -f vault-helm-config.yaml
 
 Подключите raft для vault-1 и vault-2. Url для vault-0 в кластере http://vault-0.vault-internal:8200
 ```
+minikube service -n vault vault-ui --url 
+
+export VAULT_ADDR=http://192.168.49.2:32375
+
+vault operator init -key-shares=1 -key-threshold=1 >> /home/user/vault_keys
+
+export VAULT_TOKEN=hvs.uY2XzNosxw6Kz2xJWkP2w0QS
+
+echo VAULT_TOKEN >> /home/user/root_token
+
+vault operator unseal
+```
+```
+helm install -n vault vault ./vault-custom -f vault-helm-config.yaml
 ```
 
 ## Настройка autounseal
