@@ -567,6 +567,9 @@ vault write auth/kubernetes/role/issuer \
 ```
 
 ### 27. Скачайте и установите cert-manager
+
+https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-cert-manager
+
 ```
 kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.9.1/cert-manager.crds.yaml
 
@@ -577,6 +580,10 @@ helm install cert-manager \
 ```   
 ### 28. Создайте в kubernetes сервисный аккаунт issuer
 Добавьте секрет в kubernetes и настройте certmanager
+```
+kubectl create serviceaccount issuer
+```
+
 issuer-secret.yaml
 ```
 apiVersion: v1
