@@ -639,6 +639,8 @@ kubectl apply --filename myapp-cert.yaml
 !!!Verifying the issuer Deployment
 https://cert-manager.io/docs/configuration/vault/
 
+Проверить можно следующим образом:
+
 ```
 kubectl get issuers vault-issuer -n default -o wide
 ```
@@ -702,3 +704,5 @@ https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-cert-manag
 
 3. Vault and Cert Manager
 https://cert-manager.io/docs/configuration/vault/
+
+4. https://github.com/cert-manager/cert-manager/issues/2969
