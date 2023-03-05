@@ -172,19 +172,7 @@ helm install -n vault vault ./vault-custom -f vault-helm-config.yaml
 ### 8. Инициализируйте vault на поде vault-0 с 3 ключами, любые два из которых распечатывают Vault. Сохраните root-token по пути /home/user/root_token
 
 Подключите raft для vault-1 и vault-2. Url для vault-0 в кластере http://vault-0.vault-internal:8200
-```
-minikube service -n vault vault-ui --url 
 
-export VAULT_ADDR=http://192.168.49.2:31514
-
-vault operator init -key-shares=1 -key-threshold=1 >> /home/user/vault_keys
-
-export VAULT_TOKEN=hvs.uY2XzNosxw6Kz2xJWkP2w0QS
-
-echo VAULT_TOKEN >> /home/user/root_token
-
-vault operator unseal
-```
 ```
 a. открываем консоль k9s
 b. выбираем все неймспейсы(клавиша 0)
@@ -209,6 +197,20 @@ Node       Address                        State       Voter
 vault-0    vault-0.vault-internal:8201    leader      true
 vault-1    vault-1.vault-internal:8201    follower    true
 vault-2    vault-2.vault-internal:8201    follower    true
+
+```
+```
+export VAULT_TOKEN=hvs.7drklX1Jjxxy77dr6OF9vmsq
+
+minikube service -n vault vault-ui --url 
+
+export VAULT_ADDR=http://192.168.49.2:31514
+
+vault operator init -key-shares=1 -key-threshold=1 >> /home/user/vault_keys
+
+echo $VAULT_TOKEN >> /home/user/root_token
+
+cat /home/user/root_token
 
 ```
 
@@ -534,7 +536,7 @@ https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-cert-manag
 kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.9.1/cert-manager.crds.yaml
 
 helm install cert-manager \
-    --namespace default \
+    --namespace cert-manager \
     --version v1.9.1 \
    jetstack/cert-manager
 ```   
