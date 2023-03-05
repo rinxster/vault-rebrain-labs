@@ -432,7 +432,7 @@ EOF
 
 ```
 vault write auth/userpass/users/admin policies=admin password=nimda
-vault write auth/userpass/users/dev policies=developer password=ved
+vault write auth/userpass/users/developer policies=developer password=ved
 vault write auth/userpass/users/junior policies=junior password=roinuj
 ```
 
