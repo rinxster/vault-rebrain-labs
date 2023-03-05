@@ -636,6 +636,10 @@ EOF
 
 kubectl apply --filename myapp-cert.yaml
 ```
+
+!!!Verifying the issuer Deployment
+https://cert-manager.io/docs/configuration/vault/
+
 ## Мониторинг
 ### 30. Измените тип сервисов prometheus и grafana в пространстве имен monitoring с ClusterIP на NodePort
 ```
@@ -683,3 +687,13 @@ kubectl port-forward -n monitoring svc/prometheus-grafana --address=0.0.0.0 3000
 Мы не ограничиваем в количестве панелей в дашбордах Loki и Prometheus, хотя бы 2-3 панели в каждом дашборде должно быть.
 
 Перед отправкой задания на проверку убедитесь, что все инстансы vault открыты и запущены
+
+
+
+Полезные ссылки:
+
+1. Vault Installation to Minikube via Helm with Integrated Storage
+https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-minikube-raft
+
+2. Configure Vault as a Certificate Manager in Kubernetes with Helm
+https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-cert-manager
