@@ -476,7 +476,6 @@ Vault открылся после перезапуска: OK
 vault secrets enable -path=rebrain-pki -max-lease-ttl=8760h pki
 ```
 
-
 ### 21. Скачайте наш сертификат по ссылке bundle.pem
 
 ```
@@ -510,7 +509,7 @@ allow_glob_domains=true \
 enforce_hostnames=true \
 allow_ip_sans=false \
 allow_client=true \
-period="24h" \
+max_ttl="24h" \
 allow_server=false \
 enforce_hostname=false \
 allow_client=true \
