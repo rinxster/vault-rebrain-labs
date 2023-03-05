@@ -70,7 +70,7 @@ URL сервиса vault-ui получите с помощью команды mi
 
 #### 2. Настройте AuthMethod Kubernetes. Укажите API-адрес Вашего Kubernetes кластера и сертификат CA.
 Получите IP kubernetes с помощью команды 
-`kubectl describe svc kubernetes | grep IP:.`
+`kubectl describe svc kubernetes | grep IP:`
 
 В качестве kubernetes_host укажите https://[полученный_ip].
 
