@@ -294,20 +294,37 @@ server:
 ```
 global:
   enabled: true
+  tlsDisable: true
+  serverTelemetry:
+    prometheusOperator: true
 injector:
   enabled: "false"
 server:
   standalone:
     enabled: true
     config: |
-      seal "transit" {
-        address            = "http://vault-0.vault-internal:8200"
-        token              = "hvs.CAESIFansfO7fb3vWN5oOy-LC4DbRIhKeYd4UqFobyerwmOqGh4KHGh2cy52RUlacWtWRFlVcFp1NVpHY3RsTmpYMXE"
-        key_name           = "vault-autounseal"
-        mount_path         = "transit-autounseal"
-        tls_skip_verify    = "true"
+      disable_mlock = true
+      ui=true
+
+      storage "file" {
+        path = "/vault/data"
       }
+
+      listener "tcp" {
+        address = "[::]:8200"
+        tls_disable = "true"
+      }
+      seal "transit" {
+          address            = "http://10.244.0.4:8200"
+          token              = "hvs.CAESICJRetFgTnuUKhWDiFhJBQVv87Mn5jarceH43fhUGsbbGh4KHGh2cy5yaXZYR2VtUzZpZE5PMFBwOEw0QWZKZWs"
+          key_name           = "autounseal"
+          mount_path         = "transit/"
+          tls_skip_verify    = "true"
+      }
+
 ```
+! address нужно укзать для пода vault-0 - можно взять из консоли "k9s"
+
 ```
 export VAULT_SKIP_VERIFY=true 
 export VAULT_ADDR=http://192.168.49.2:31297
@@ -486,7 +503,7 @@ vault write rebrain-pki/config/ca pem_bundle=@/opt/certs/bundle.pem
 ```
 vault write rebrain-pki/roles/local-certs \
 allowed_domains="myapp.st_login.rebrain.me" \
-allow_subdomains=true \
+allow_subdomains=false \
 allow_wildcard_certificates=false \
 allow_localhost=false \
 allow_glob_domains=true \
@@ -524,7 +541,6 @@ path "rebrain-pki/issue/local-certs" {
 
 EOF
 ```
-
 
 ### 25. Активируйте аутентификацию kubernetes. В качестве хоста используйте https://$KUBERNETES_PORT_443_TCP_ADDR:443
 ```
