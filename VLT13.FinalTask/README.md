@@ -172,7 +172,7 @@ helm install -n vault vault ./vault-custom -f vault-helm-config.yaml
 ```
 minikube service -n vault vault-ui --url 
 
-export VAULT_ADDR=http://192.168.49.2:32375
+export VAULT_ADDR=http://192.168.49.2:32380
 
 vault operator init -key-shares=1 -key-threshold=1 >> /home/user/vault_keys
 
@@ -275,6 +275,10 @@ vault policy write autounseal autounseal.hcl
 vault token create -orphan -policy="autounseal" -period=24h
 ```
 ### 13. Ниже представлен helm сhart для инстанса vault, используемого для autounseal. Напишите конфиг vault для autounseal. Файл vault-auto-unseal-helm-values.yml
+
+
+
+
 ```
 global:
   enabled: true
@@ -320,7 +324,7 @@ kubectl -n vault-a exec -it vault-0 -- vault operator init | cat > .vault-recove
 ### 15. Инициализируйте секреты по путям prod, stage, dev и разрешите userpass
 
 ```
-vault auth enable -path prod userpass && vault auth enable -path stage userpass && vault auth enable -path dev userpass
+vault auth enable userpass && vault auth enable -path prod userpass && vault auth enable -path stage userpass && vault auth enable -path dev userpass
 ```
 
 ### 16.Создайте политику secret-admin-policy, которая будет удовлетворять следующим условиям:
@@ -535,7 +539,7 @@ EOF
 kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.9.1/cert-manager.crds.yaml
 
 helm install cert-manager \
-    --namespace cert-manager \
+    --namespace default \
     --version v1.9.1 \
    jetstack/cert-manager
 ```   
