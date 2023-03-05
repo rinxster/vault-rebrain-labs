@@ -490,7 +490,7 @@ wget https://storage.yandexcloud.net/files.rebrainme.com/workshops/hashicorp-vau
 ```
 vault write rebrain-pki/config/urls issuing_certificates="http://127.0.0.1:8200/v1/pki/ca" crl_distribution_point="http://127.0.0.1:8200/v1/pki/crl"
 
-vault write rebrain-pki/config/ca pem_bundle=@/opt/certs/bundle.pem
+vault write rebrain-pki/config/ca pem_bundle=@./bundle.pem
 ```
 
 ### 23. Создайте роль rebrain-pki/roles/local-certs для создания сертификата со следующими параметрами:
