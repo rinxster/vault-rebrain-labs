@@ -262,6 +262,8 @@ server:
 ```
 Решение:
 ```
+cat > vault-auto-unseal-helm-values.yml << EOF
+
 global:
   enabled: true
   tlsDisable: true
@@ -292,6 +294,7 @@ server:
           tls_skip_verify    = "true"
       }
 
+EOF
 ```
 ! address нужно укзать для пода vault-0 - можно взять из консоли "k9s"
 token  - токен надо брать выше из пункта 12.
