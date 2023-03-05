@@ -292,6 +292,7 @@ server:
 
 ```
 ! address нужно укзать для пода vault-0 - можно взять из консоли "k9s"
+token  - токен надо брать выше из пункта 12.
 
 ```
 export VAULT_SKIP_VERIFY=true 
@@ -322,7 +323,6 @@ vault auth enable userpass && vault auth enable -path prod userpass && vault aut
 - по пути "sys/health" следующие разрешения: "read", "sudo"
 
 ```
-
 vault policy write -tls-skip-verify admin - << EOF
 
 path "auth/*" {
@@ -369,7 +369,6 @@ path "sys/health" {
   capabilities = ["read", "sudo"]
 }
 
-
 EOF
 ```
 
@@ -380,7 +379,6 @@ EOF
 - по пути "dev/*" - "read", "create", "update"
 
 ```
-
 vault policy write -tls-skip-verify developer - << EOF
 
 path "prod/*" {
@@ -564,8 +562,6 @@ export ISSUER_SECRET_REF=$(kubectl get secrets --output=json | jq -r '.items[].m
 
 ```
 `kubectl get svc -n vault` и там внутренний ip сервиса vault-ui -> далее заменяем в манифесте ниже %vault-ui-ip%:
-
-
 
 ```
 
