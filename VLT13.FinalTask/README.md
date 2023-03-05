@@ -172,7 +172,7 @@ helm install -n vault vault ./vault-custom -f vault-helm-config.yaml
 ```
 minikube service -n vault vault-ui --url 
 
-export VAULT_ADDR=http://192.168.49.2:32380
+export VAULT_ADDR=http://192.168.49.2:31514
 
 vault operator init -key-shares=1 -key-threshold=1 >> /home/user/vault_keys
 
@@ -235,6 +235,9 @@ https://developer.hashicorp.com/vault/tutorials/auto-unseal/autounseal-transit
 
 `vault policy write autounseal autounseal-policy.hcl`
 
+
+
+
 **п.11 Сгенерируйте orphan токен для политики autounseal с периодом 24 часа**
 
 `vault token create -orphan -policy="autounseal" -period=24h`
@@ -278,7 +281,7 @@ vault token create -orphan -policy="autounseal" -period=24h
 
 
 
-
+ Пример:
 ```
 global:
   enabled: true
@@ -290,7 +293,7 @@ server:
     config: |
       <vault autounseal config>
 ```
-
+Решение:
 ```
 global:
   enabled: true
@@ -315,8 +318,8 @@ server:
         tls_disable = "true"
       }
       seal "transit" {
-          address            = "http://10.244.0.4:8200"
-          token              = "hvs.CAESICJRetFgTnuUKhWDiFhJBQVv87Mn5jarceH43fhUGsbbGh4KHGh2cy5yaXZYR2VtUzZpZE5PMFBwOEw0QWZKZWs"
+          address            = "http://10.244.2.6:8200"
+          token              = "hvs.CAESIAPfKIUC9HqdHZSgZ1-y9MQLUzAZsZlOkLU1Rmt1whtHGh4KHGh2cy5ZR0NVSlNiZExDU1RoVTh2a1BBcUxXb0M"
           key_name           = "autounseal"
           mount_path         = "transit/"
           tls_skip_verify    = "true"
@@ -542,11 +545,25 @@ EOF
 ```
 
 ### 25. Активируйте аутентификацию kubernetes. В качестве хоста используйте https://$KUBERNETES_PORT_443_TCP_ADDR:443
+
+https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-minikube-raft
+
 ```
+vault auth enable kubernetes
+```
+```
+vault write auth/kubernetes/config \
+    kubernetes_host="https://$KUBERNETES_PORT_443_TCP_ADDR:443"
 ```
 
 ### 26. Создайте роль auth/kubernetes/role/issuer с политикой cert-issue-policy, к которой могут обращаться только сервисные аккаунты с именем issuer из пространства имен default, ttl=20m.
+https://docs.armory.io/continuous-deployment/armory-admin/secrets/vault-k8s-configuration/
 ```
+vault write auth/kubernetes/role/issuer \
+        bound_service_account_names=issuer \
+        bound_service_account_namespaces=default \
+        policies=cert-issue-policy \
+        ttl=20m
 ```
 
 ### 27. Скачайте и установите cert-manager
@@ -572,7 +589,8 @@ type: kubernetes.io/service-account-token
 ```
 ```
 kubectl apply -f issuer-secret.yaml
-
+```
+```
 export ISSUER_SECRET_REF=$(kubectl get secrets --output=json | jq -r '.items[].metadata | select(.name|startswith("issuer-token-")).name')
 
 cat > vault-issuer.yaml << EOF
