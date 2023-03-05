@@ -507,12 +507,11 @@ allow_subdomains=false \
 allow_wildcard_certificates=false \
 allow_localhost=false \
 allow_glob_domains=true \
-enforce_hostnames=true \
+enforce_hostnames=false \
 allow_ip_sans=false \
 allow_client=true \
 max_ttl="24h" \
 allow_server=false \
-enforce_hostname=false \
 allow_client=true \
 allow_any_name=true \
 allow_bare_domains=true
@@ -603,7 +602,7 @@ apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
   name: vault-issuer
-  namespace: cert-manager
+  namespace: default
 spec:
   vault:
     server: http://%vault-ui-ip%:8200
@@ -624,7 +623,7 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: myapp
-  namespace: cert-manager
+  namespace: default
 spec:
   secretName: myapp-tls
   issuerRef:
@@ -639,6 +638,10 @@ kubectl apply --filename myapp-cert.yaml
 
 !!!Verifying the issuer Deployment
 https://cert-manager.io/docs/configuration/vault/
+
+```
+kubectl get issuers vault-issuer -n default -o wide
+```
 
 ## Мониторинг
 ### 30. Измените тип сервисов prometheus и grafana в пространстве имен monitoring с ClusterIP на NodePort
@@ -689,7 +692,6 @@ kubectl port-forward -n monitoring svc/prometheus-grafana --address=0.0.0.0 3000
 Перед отправкой задания на проверку убедитесь, что все инстансы vault открыты и запущены
 
 
-
 Полезные ссылки:
 
 1. Vault Installation to Minikube via Helm with Integrated Storage
@@ -697,3 +699,6 @@ https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-minikube-r
 
 2. Configure Vault as a Certificate Manager in Kubernetes with Helm
 https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-cert-manager
+
+3. Vault and Cert Manager
+https://cert-manager.io/docs/configuration/vault/
