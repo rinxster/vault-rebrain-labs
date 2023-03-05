@@ -597,6 +597,13 @@ kubectl apply -f issuer-secret.yaml
 ```
 export ISSUER_SECRET_REF=$(kubectl get secrets --output=json | jq -r '.items[].metadata | select(.name|startswith("issuer-token-")).name')
 
+```
+`kubectl get svc -n vault` и там внутренний ip сервиса vault-ui -> далее заменяем в манифесте ниже %vault-ui-ip%:
+
+
+
+```
+
 cat > vault-issuer.yaml << EOF
 apiVersion: cert-manager.io/v1
 kind: Issuer
