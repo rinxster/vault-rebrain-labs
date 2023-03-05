@@ -69,7 +69,8 @@ URL сервиса vault-ui получите с помощью команды mi
 `kubectl create ns vault 2>/dev/null && helm install -f /home/user/vault_helm/values.yaml -n vault vault /home/user/vault_helm/vault-0.22.1.tgz`
 
 #### 2. Настройте AuthMethod Kubernetes. Укажите API-адрес Вашего Kubernetes кластера и сертификат CA.
-Получите IP kubernetes с помощью команды kubectl describe svc kubernetes | grep IP:.
+Получите IP kubernetes с помощью команды 
+`kubectl describe svc kubernetes | grep IP:`
 
 В качестве kubernetes_host укажите https://[полученный_ip].
 
