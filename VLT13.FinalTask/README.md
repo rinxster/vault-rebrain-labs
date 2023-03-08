@@ -287,8 +287,8 @@ server:
         tls_disable = "true"
       }
       seal "transit" {
-          address            = "http://10.244.2.6:8200"
-          token              = "hvs.CAESIAPfKIUC9HqdHZSgZ1-y9MQLUzAZsZlOkLU1Rmt1whtHGh4KHGh2cy5ZR0NVSlNiZExDU1RoVTh2a1BBcUxXb0M"
+          address            = "http://10.244.2.8:8200"
+          token              = "hvs.CAESILHhydMVJGrElxCTkXqqW8flLQkAf6JuD-yJuAbEBObNGh4KHGh2cy44ODc1VXl2bE16Sk1FRUxjWlZLM09qQzM"
           key_name           = "autounseal"
           mount_path         = "transit/"
           tls_skip_verify    = "true"
@@ -551,13 +551,16 @@ kubectl create serviceaccount issuer
 
 issuer-secret.yaml
 ```
+cat > issuer-secret.yaml << EOF
 apiVersion: v1
 kind: Secret
 metadata:
   name: issuer-token-lmzpj
   annotations:
-    kubernetes.io/service-account.name: issuer
+    kubernetes.io/service-account.name: vault-issuer
 type: kubernetes.io/service-account-token
+
+EOF
 ```
 ```
 kubectl apply -f issuer-secret.yaml
@@ -578,7 +581,7 @@ metadata:
   namespace: default
 spec:
   vault:
-    server: http://%vault-ui-ip%:8200
+    server: http://10.107.222.134:8200
     path: rebrain-pki/sign/local-certs
     auth:
       kubernetes:
@@ -679,3 +682,11 @@ https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-cert-manag
 https://cert-manager.io/docs/configuration/vault/
 
 4. https://github.com/cert-manager/cert-manager/issues/2969
+
+5. https://github.com/cert-manager/cert-manager/issues/4144
+
+6. user@rebrain-host:~$ kubectl get issuers vault-issuer -n default -o wide
+NAME           READY   STATUS                                                        AGE
+vault-issuer   False   Vault Kubernetes auth requires both role and secretRef.name   10m
+
+https://www.ibm.com/docs/en/cloud-paks/cp-management/2.1.x?topic=manager-using-vault-issue-certificates
