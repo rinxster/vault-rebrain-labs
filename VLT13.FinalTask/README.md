@@ -200,13 +200,12 @@ vault-2    vault-2.vault-internal:8201    follower    true
 
 ```
 ```
-export VAULT_TOKEN=hvs.7drklX1Jjxxy77dr6OF9vmsq
 
 minikube service -n vault vault-ui --url 
 
-export VAULT_ADDR=http://192.168.49.2:31562
+export VAULT_ADDR=http://192.168.49.2:30238
 
-vault operator init -key-shares=1 -key-threshold=1 >> /home/user/vault_keys
+export VAULT_SKIP_VERIFY=true && export VAULT_TOKEN=hvs.6PE71MtGlJigeXTDNrHdc0fj
 
 echo $VAULT_TOKEN >> /home/user/root_token
 
@@ -294,7 +293,7 @@ server:
       }
       seal "transit" {
           address            = "http://10.244.1.6:8200"
-          token              = "hvs.CAESIGw1c32sVWk9DOibZ_Capk_dfC8OxRFRp31kkm-LRgouGh4KHGh2cy5YaHBTbHJHOVNwMTdhZGIxQ2ZaS1FrdnQ"
+          token              = "hvs.CAESIDzR6C4vKboWtg_EAH87AHcGr1N4vzuksFNtV7MmzTa2Gh4KHGh2cy44MzlrVlhQam1aN256MjZHV1NsN012bXE"
           key_name           = "autounseal"
           mount_path         = "transit/"
           tls_skip_verify    = "true"
@@ -444,7 +443,7 @@ wget https://storage.yandexcloud.net/files.rebrainme.com/workshops/hashicorp-vau
 ### 22. Запишите скачанный сертификат по пути rebrain-pki/config/ca
 
 ```
-vault write rebrain-pki/config/urls issuing_certificates="http://192.168.49.2:31562/v1/pki/ca" crl_distribution_point="http://192.168.49.2:31562/v1/pki/crl"
+vault write rebrain-pki/config/urls issuing_certificates="http://127.0.0.1:8200/v1/pki/ca" crl_distribution_point="http://127.0.0.1:8200/v1/pki/crl"
 
 vault write rebrain-pki/config/ca pem_bundle=@bundle.pem
 ```
@@ -503,12 +502,22 @@ EOF
 
 https://developer.hashicorp.com/vault/tutorials/kubernetes/kubernetes-minikube-raft
 
+
 ```
+kubectl describe svc kubernetes | grep IP
+
+export K8S_HOST=https://10.96.0.1
+
 vault auth enable kubernetes
-```
-```
+
+export TOKEN_REVIEWER_JWT=$(kubectl create token vault -n vault)
+
+export CA_CRT=$(cat ~/.minikube/ca.crt)
+
 vault write auth/kubernetes/config \
-    kubernetes_host="https://$KUBERNETES_PORT_443_TCP_ADDR:443"
+token_reviewer_jwt="$TOKEN_REVIEWER_JWT" \
+kubernetes_host="$K8S_HOST" \
+kubernetes_ca_cert="$CA_CRT"
 ```
 
 ### 26. Создайте роль auth/kubernetes/role/issuer с политикой cert-issue-policy, к которой могут обращаться только сервисные аккаунты с именем issuer из пространства имен default, ttl=20m.
@@ -549,7 +558,7 @@ kind: Secret
 metadata:
   name: issuer-token-lmzpj
   annotations:
-    kubernetes.io/service-account.name: "issuer"
+    kubernetes.io/service-account.name: issuer
 type: kubernetes.io/service-account-token
 
 EOF
@@ -573,7 +582,7 @@ metadata:
   namespace: default
 spec:
   vault:
-    server: http://10.108.176.72:8200
+    server: http://10.105.116.94:8200
     path: rebrain-pki/sign/local-certs
     auth:
       kubernetes:
