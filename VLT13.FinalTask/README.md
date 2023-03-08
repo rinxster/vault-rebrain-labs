@@ -204,7 +204,7 @@ export VAULT_TOKEN=hvs.7drklX1Jjxxy77dr6OF9vmsq
 
 minikube service -n vault vault-ui --url 
 
-export VAULT_ADDR=http://192.168.49.2:31514
+export VAULT_ADDR=http://192.168.49.2:31562
 
 vault operator init -key-shares=1 -key-threshold=1 >> /home/user/vault_keys
 
@@ -261,6 +261,12 @@ server:
       <vault autounseal config>
 ```
 Решение:
+
+! address нужно укзать для пода vault-0 - можно взять из консоли "k9s" (или командой `kubectl get pods --all-namespaces -o wide | grep vault-0
+`)
+
+token  - токен надо брать выше из пункта 12.
+
 ```
 cat > vault-auto-unseal-helm-values.yml << EOF
 
@@ -287,8 +293,8 @@ server:
         tls_disable = "true"
       }
       seal "transit" {
-          address            = "http://10.244.2.8:8200"
-          token              = "hvs.CAESILHhydMVJGrElxCTkXqqW8flLQkAf6JuD-yJuAbEBObNGh4KHGh2cy44ODc1VXl2bE16Sk1FRUxjWlZLM09qQzM"
+          address            = "http://10.244.1.6:8200"
+          token              = "hvs.CAESIGw1c32sVWk9DOibZ_Capk_dfC8OxRFRp31kkm-LRgouGh4KHGh2cy5YaHBTbHJHOVNwMTdhZGIxQ2ZaS1FrdnQ"
           key_name           = "autounseal"
           mount_path         = "transit/"
           tls_skip_verify    = "true"
@@ -296,18 +302,10 @@ server:
 
 EOF
 ```
-! address нужно укзать для пода vault-0 - можно взять из консоли "k9s"
-token  - токен надо брать выше из пункта 12.
 
-```
-export VAULT_SKIP_VERIFY=true 
-export VAULT_ADDR=http://192.168.49.2:31297
-export VAULT_TOKEN=hvs.SySNVTHujEOVGxdd6TNctitq
-
-```
 ### 14. Установите чарт
 ```
-helm install -n vault-a vault ./vault-custom -f vault-auto-unseal-helm-values.yml\
+helm install -n vault-a vault ./vault-custom -f vault-auto-unseal-helm-values.yml 
 kubectl -n vault-a exec -it vault-0 -- vault operator init | cat > .vault-recovery
 ```
 
@@ -428,16 +426,6 @@ vault write auth/userpass/users/developer policies=developer password=ved
 vault write auth/userpass/users/junior policies=junior password=roinuj
 ```
 
-```
-Vault установлен: OK
-Raft настроен верно: OK
-Пользователь admin не использует необходимые политики: FAILED
-Пользователь dev использует необходимые политики: OK
-Пользователь junior использует необходимые политики: OK
-Vault открылся после перезапуска: OK
-Ошибка проверки роли local-certs: FAILED
-Политика cert-issue-policy прошла проверку: OK
-```
 
 ## PKI
 
@@ -456,6 +444,8 @@ wget https://storage.yandexcloud.net/files.rebrainme.com/workshops/hashicorp-vau
 ### 22. Запишите скачанный сертификат по пути rebrain-pki/config/ca
 
 ```
+vault write rebrain-pki/config/urls issuing_certificates="http://192.168.49.2:31562/v1/pki/ca" crl_distribution_point="http://192.168.49.2:31562/v1/pki/crl"
+
 vault write rebrain-pki/config/ca pem_bundle=@bundle.pem
 ```
 
@@ -544,10 +534,12 @@ helm install cert-manager \
    jetstack/cert-manager
 ```   
 ### 28. Создайте в kubernetes сервисный аккаунт issuer
-Добавьте секрет в kubernetes и настройте certmanager
 ```
 kubectl create serviceaccount issuer
 ```
+
+### 29. Добавьте секрет в kubernetes и настройте certmanager
+
 
 issuer-secret.yaml
 ```
@@ -557,7 +549,7 @@ kind: Secret
 metadata:
   name: issuer-token-lmzpj
   annotations:
-    kubernetes.io/service-account.name: vault-issuer
+    kubernetes.io/service-account.name: "issuer"
 type: kubernetes.io/service-account-token
 
 EOF
@@ -569,7 +561,7 @@ kubectl apply -f issuer-secret.yaml
 export ISSUER_SECRET_REF=$(kubectl get secrets --output=json | jq -r '.items[].metadata | select(.name|startswith("issuer-token-")).name')
 
 ```
-`kubectl get svc -n vault` и там внутренний ip сервиса vault-ui -> далее заменяем в манифесте ниже %vault-ui-ip%:
+`kubectl get svc -n vault | grep vault-ui` и там внутренний ip сервиса vault-ui -> далее заменяем в манифесте ниже %vault-ui-ip%:
 
 ```
 
@@ -581,7 +573,7 @@ metadata:
   namespace: default
 spec:
   vault:
-    server: http://10.107.222.134:8200
+    server: http://10.108.176.72:8200
     path: rebrain-pki/sign/local-certs
     auth:
       kubernetes:
