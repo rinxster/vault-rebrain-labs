@@ -551,7 +551,6 @@ metadata:
   annotations:
     kubernetes.io/service-account.name: "issuer"
 type: kubernetes.io/service-account-token
-data: {}
 
 EOF
 ```
