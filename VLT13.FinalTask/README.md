@@ -203,7 +203,7 @@ vault-2    vault-2.vault-internal:8201    follower    true
 
 minikube service -n vault vault-ui --url 
 
-export VAULT_ADDR=http://192.168.49.2:30238
+export VAULT_ADDR=http://192.168.49.2:31820
 
 export VAULT_SKIP_VERIFY=true && export VAULT_TOKEN=hvs.6PE71MtGlJigeXTDNrHdc0fj
 
@@ -292,8 +292,8 @@ server:
         tls_disable = "true"
       }
       seal "transit" {
-          address            = "http://10.244.1.6:8200"
-          token              = "hvs.CAESIDzR6C4vKboWtg_EAH87AHcGr1N4vzuksFNtV7MmzTa2Gh4KHGh2cy44MzlrVlhQam1aN256MjZHV1NsN012bXE"
+          address            = "http://10.244.2.7:8200"
+          token              = "hvs.CAESIPvuQp3CrfK38NV6Fh6lVJr_JlOIIWZ2CrU_cAtvx4zXGh4KHGh2cy5zZ2ljUHpLY3lmZDB0QVg5YXUxSm"
           key_name           = "autounseal"
           mount_path         = "transit/"
           tls_skip_verify    = "true"
@@ -519,6 +519,10 @@ token_reviewer_jwt="$TOKEN_REVIEWER_JWT" \
 kubernetes_host="$K8S_HOST" \
 kubernetes_ca_cert="$CA_CRT"
 ```
+проверяем результат настройки
+```
+vault read auth/kubernetes/config
+```
 
 ### 26. Создайте роль auth/kubernetes/role/issuer с политикой cert-issue-policy, к которой могут обращаться только сервисные аккаунты с именем issuer из пространства имен default, ttl=20m.
 https://docs.armory.io/continuous-deployment/armory-admin/secrets/vault-k8s-configuration/
@@ -582,7 +586,7 @@ metadata:
   namespace: default
 spec:
   vault:
-    server: http://10.105.116.94:8200
+    server: http://10.110.65.148:8200
     path: rebrain-pki/sign/local-certs
     auth:
       kubernetes:
@@ -620,7 +624,19 @@ https://cert-manager.io/docs/configuration/vault/
 
 ```
 kubectl get issuers vault-issuer -n default -o wide
+kubectl get certificates
+
+Пример вывода:
+user@rebrain-host:~$ kubectl get issuers vault-issuer -n default -o wide
+NAME           READY   STATUS           AGE
+vault-issuer   True    Vault verified   7s
+user@rebrain-host:~$ kubectl get certificates
+NAME    READY   SECRET      AGE
+myapp   True    myapp-tls   25s
+
 ```
+
+
 
 ## Мониторинг
 ### 30. Измените тип сервисов prometheus и grafana в пространстве имен monitoring с ClusterIP на NodePort
@@ -632,6 +648,8 @@ kubectl edit svc -n monitoring prometheus-grafana
 
 ### 31. Создайте файл с настройками для Helm чарта loki-stack-values.yml
 ```
+cat > loki-stack-values.yml <<EOF
+
 loki:
  enabled: true
  persistence:
@@ -650,6 +668,8 @@ promtail:
 
 grafana:
  enabled: false
+
+EOF
 ``` 
 ### 32. Разверните helm chart
 ```
@@ -660,6 +680,14 @@ helm install loki grafana/loki-stack -n monitoring -f ~/loki-stack-values.yml
 ```
 kubectl port-forward -n monitoring svc/prometheus-grafana --address=0.0.0.0 3000:80
 ```
+```
+kubectl edit svc -n monitoring loki
+
+ и поправить тоже на NodePort как в пункте 30.
+ Далее в настройках графаны добавляем источник http://loki.monitoring:3100/
+
+```
+
 ### 34. Сконфигурируйте dashboard grafana для произвольных метрик vault.
 
 Отправьте на проверку куратору скриншоты Garafana:
@@ -691,3 +719,5 @@ NAME           READY   STATUS                                                   
 vault-issuer   False   Vault Kubernetes auth requires both role and secretRef.name   10m
 
 https://www.ibm.com/docs/en/cloud-paks/cp-management/2.1.x?topic=manager-using-vault-issue-certificates
+
+7. https://grafana.com/blog/2021/11/02/introducing-new-integrations-to-make-it-easier-to-monitor-vault-with-grafana/
