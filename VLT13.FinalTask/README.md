@@ -636,8 +636,6 @@ myapp   True    myapp-tls   25s
 
 ```
 
-
-
 ## Мониторинг
 ### 30. Измените тип сервисов prometheus и grafana в пространстве имен monitoring с ClusterIP на NodePort
 ```
@@ -676,6 +674,12 @@ EOF
 helm install loki grafana/loki-stack -n monitoring -f ~/loki-stack-values.yml
 ```
 ### 33.Настройте vault для логгирования в stdout
+
+https://developer.hashicorp.com/vault/docs/audit/file
+```
+vault audit enable file file_path=stdout
+```
+
 Можете выполнить port-forwarding для настройки графаны снаружи
 ```
 kubectl port-forward -n monitoring svc/prometheus-grafana --address=0.0.0.0 3000:80
@@ -721,3 +725,5 @@ vault-issuer   False   Vault Kubernetes auth requires both role and secretRef.na
 https://www.ibm.com/docs/en/cloud-paks/cp-management/2.1.x?topic=manager-using-vault-issue-certificates
 
 7. https://grafana.com/blog/2021/11/02/introducing-new-integrations-to-make-it-easier-to-monitor-vault-with-grafana/
+
+8. https://developer.hashicorp.com/vault/docs/audit/file
