@@ -319,14 +319,6 @@ helm install -n vault-a vault ./vault-custom -f vault-auto-unseal-helm-values.ym
 проверка:
 
 
-0. Включаем в разных консолях вывод логов подов
-```
-
-```
-```
-
-```
-
 1. Перезапускаем кластер minikube `minikube stop && minikube start` (эмуляция сбоя)
 
 2. в результате основной волт запечатан на vault\vaul-0 и требует ручного unseal
@@ -356,8 +348,6 @@ kubectl logs -n vault -f vault-0 -c vault
 2023-03-11T18:35:30.233Z [INFO]  core: vault is unsealed
 2023-03-11T18:35:30.233Z [INFO]  core: unsealed with stored key
 ```
-
-
 
 
 ## User-pass авторизация
@@ -449,7 +439,6 @@ path "dev/*" {
 
 EOF
 ```
-
 
 ### 18. Создайте политику junior, удовлетворяющую следующим условиям:
 
@@ -777,5 +766,6 @@ vault-issuer   False   Vault Kubernetes auth requires both role and secretRef.na
 https://www.ibm.com/docs/en/cloud-paks/cp-management/2.1.x?topic=manager-using-vault-issue-certificates
 
 7. https://grafana.com/blog/2021/11/02/introducing-new-integrations-to-make-it-easier-to-monitor-vault-with-grafana/
+7.1 https://habr.com/ru/flows/admin/ - 
 
 8. https://developer.hashicorp.com/vault/docs/audit/file
