@@ -200,7 +200,6 @@ vault-2    vault-2.vault-internal:8201    follower    true
 
 ```
 ```
-
 minikube service -n vault vault-ui --url 
 
 export VAULT_ADDR=http://192.168.49.2:31687
@@ -212,7 +211,6 @@ echo $VAULT_TOKEN >> /home/user/root_token
 cat /home/user/root_token
 
 ```
-
 ## Настройка autounseal
 https://developer.hashicorp.com/vault/tutorials/auto-unseal/autounseal-transit
 https://dev.to/luafanti/vault-auto-unseal-using-transit-secret-engine-on-kubernetes-13k8
