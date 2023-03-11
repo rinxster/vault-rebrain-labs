@@ -203,7 +203,7 @@ vault-2    vault-2.vault-internal:8201    follower    true
 
 minikube service -n vault vault-ui --url 
 
-export VAULT_ADDR=http://192.168.49.2:31820
+export VAULT_ADDR=http://192.168.49.2:31687
 
 export VAULT_SKIP_VERIFY=true && export VAULT_TOKEN=hvs.6PE71MtGlJigeXTDNrHdc0fj
 
@@ -215,11 +215,21 @@ cat /home/user/root_token
 
 ## Настройка autounseal
 https://developer.hashicorp.com/vault/tutorials/auto-unseal/autounseal-transit
+https://dev.to/luafanti/vault-auto-unseal-using-transit-secret-engine-on-kubernetes-13k8
+https://www.bogotobogo.com/DevOps/Docker/Docker_Kubernetes_Vault_Consul_minikube_Auto_Unseal_Vault_Transit.php
 
 
 ### 10. Активируйте transit autounseal на vault-0
 
 ```
+kubectl port-forward vault-0 -n vault 8200:8200
+```
+далее в отдельном окне:
+```
+export VAULT_ADDR=http://127.0.0.1:8200
+
+vault login
+
 vault secrets enable transit
 vault write -f transit/keys/autounseal
 ```
@@ -227,7 +237,7 @@ vault write -f transit/keys/autounseal
 ### 11. Создайте политику autounseal, токен для которой позволит выполнять autounseal
 
 ```
- tee autounseal.hcl <<EOF
+cat > autounseal.hcl << EOF
 path "transit/encrypt/autounseal" {
    capabilities = [ "update" ]
 }
@@ -288,12 +298,12 @@ server:
       }
 
       listener "tcp" {
-        address = "[::]:8200"
+        address = "0.0.0.0:8200"
         tls_disable = "true"
       }
       seal "transit" {
-          address            = "http://10.244.2.7:8200"
-          token              = "hvs.CAESIPvuQp3CrfK38NV6Fh6lVJr_JlOIIWZ2CrU_cAtvx4zXGh4KHGh2cy5zZ2ljUHpLY3lmZDB0QVg5YXUxSm"
+          address            = "http://vault.vault:8200"
+          token              = "hvs.CAESICnZ_KPMb3EGcT3PIqyCCypj6JwPIyv_mOr8sMIIka33Gh4KHGh2cy56T3plUVQyTVc5aWdtdE40OVMzZXNkeHQ"
           key_name           = "autounseal"
           mount_path         = "transit/"
           tls_skip_verify    = "true"
@@ -304,9 +314,53 @@ EOF
 
 ### 14. Установите чарт
 ```
-helm install -n vault-a vault ./vault-custom -f vault-auto-unseal-helm-values.yml 
-kubectl -n vault-a exec -it vault-0 -- vault operator init | cat > .vault-recovery
+
+helm install -n vault-a vault ./vault-custom -f vault-auto-unseal-helm-values.yml && kubectl -n vault-a exec -it vault-0 -- vault operator init | cat > .vault-recovery
 ```
+
+проверка:
+
+
+0. Включаем в разных консолях вывод логов подов
+```
+
+```
+```
+
+```
+
+1. Перезапускаем кластер minikube `minikube stop && minikube start` (эмуляция сбоя)
+
+2. в результате основной волт запечатан на vault\vaul-0 и требует ручного unseal
+
+3. vault-a\vaul-0 соответственно сразу не стартует автоматом, так как "распечатывающий" vault\vaul-0 пока запечатан.
+
+`kubectl logs -n vault-a -f vault-0 -c vault`
+
+```
+2023-03-11T18:32:16.158Z [INFO]  proxy environment: http_proxy="" https_proxy="" no_proxy=""
+Error parsing Seal configuration: Error making API request.
+
+URL: PUT http://vault.vault:8200/v1/transit/encrypt/autounseal
+Code: 503. Errors:
+
+* Vault is sealed
+```
+
+4. делаю unseal vault\vaul-0 `vault operator unseal`
+Можно посмотреть логи
+```
+kubectl logs -n vault -f vault-0 -c vault
+```
+
+5. vault-a\vaul-0 распечатывается сам через некоторое время
+```
+2023-03-11T18:35:30.233Z [INFO]  core: vault is unsealed
+2023-03-11T18:35:30.233Z [INFO]  core: unsealed with stored key
+```
+
+
+
 
 ## User-pass авторизация
 ### 15. Инициализируйте секреты по путям prod, stage, dev и разрешите userpass
