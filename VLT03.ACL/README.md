@@ -17,11 +17,12 @@ ACL: пишем политики
 ## Задание:
 ### 1. Проведите инициализацию кластера с 3 ключами, любые два из которых распечатывают Vault. Сохраните root token в файл /home/user/root_token.
 ```
-export VAULT_ADDR=https://127.0.0.1:8200 && sudo systemctl restart vault && vault operator init -key-shares=3 -key-threshold=2 >> /home/user/vault_keys
+export VAULT_ADDR=https://127.0.0.1:8200 && sudo systemctl restart vault && vault operator init -key-shares=1 -key-threshold=1 >> /home/user/vault_keys
 
 
-export VAULT_TOKEN=hvs.SR6BNLMuIzptLsMWew30a9G3 && echo $VAULT_TOKEN >> /home/user/root_token
+export VAULT_TOKEN=hvs.0glEw36z97qE6VsOIVoLIvPo && echo $VAULT_TOKEN >> /home/user/root_token
 
+vault operator unseal
 ```
 
 ### 2. Включите AuthMethod userpass по пути corp-auth. Установите максимальное время жизни токена - 5 часов, TTL - 1 час.
@@ -49,7 +50,7 @@ vault policy write -tls-skip-verify user - << EOF
 
 
 path "kv-development/{{identity.entity.id}}/*" {
-  capabilities = ["create", "delete", "read", "update"]
+  capabilities = ["create", "delete", "read", "update", "patch", "list"]
 }
 
 EOF
