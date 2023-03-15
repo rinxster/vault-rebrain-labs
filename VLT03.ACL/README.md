@@ -35,37 +35,29 @@ vault auth enable -max-lease-ttl="5h" -default-lease-ttl="1h" -path corp-auth us
 ```
 vault policy write -tls-skip-verify user - << EOF
 
-path "kv-development/{{identity.entity.id}}" {
-  capabilities = ["create", "read", "update", "patch", "list"]
+
+path "kv-development/data/{{identity.entity.id}}/*" {
+  capabilities = ["create", "delete", "read", "update", "patch"]
 }
 
-path "kv-development/{{identity.entity.id}}/*" {
-  capabilities = ["create", "delete", "read",]
-}
-
-EOF
-```
-```
-vault policy write -tls-skip-verify user - << EOF
-
-
-path "kv-development/{{identity.entity.id}}/*" {
-  capabilities = ["create", "delete", "read", "update", "patch", "list"]
+path "kv-development/metadata/{{identity.entity.id}}/*" {
+  capabilities = ["list"]
 }
 
 EOF
 ```
+
 ### 4. Напишите политику dev-junior, которая разрешает ТОЛЬКО ЧТЕНИЕ ДАННЫХ секрета db/mysql в kv-development/ и kv-staging/ без доступа к метаданным.
 
 ```
 vault policy write -tls-skip-verify dev-junior - << EOF
 
-path "kv-development/db/mysql" {
-  capabilities = ["read", "list"]
+path "kv-development/data/db/mysql" {
+  capabilities = ["read"]
 }
 
-path "kv-staging/db/mysql" {
-  capabilities = ["read", "list"]
+path "kv-staging/data/db/mysql" {
+  capabilities = ["read", ]
 }
 
 path "kv-development/metadata/db/mysql" {
@@ -77,45 +69,10 @@ path "kv-staging/metadata/db/mysql" {
 }
 EOF
 ```
-вариант
-```
 
-vault policy write -tls-skip-verify dev-junior - << EOF
-
-path "kv-development/db/mysql" {
-  capabilities = ["read"]
-}
-
-path "kv-staging/db/mysql" {
-  capabilities = ["read"]
-}
-
-path "kv-development/metadata/*" {
-  capabilities = ["deny"]
-}
-
-path "kv-staging/metadata/*" {
-  capabilities = ["deny"]
-}
-EOF
-
-```
 
 ### 5. Напишите политику devops-junior, которая разрешает ЧТЕНИЕ И ИЗМЕНЕНИЕ данных db/mysql в kv-development/ и kv-staging/. Полная перезапись должна быть запрещена.
 
-```
-vault policy write -tls-skip-verify devops-junior - << EOF
-
-path "kv-development/db/mysql" {
-  capabilities = ["read", "list", "update"]
-}
-
-path "kv-staging/db/mysql" {
-  capabilities = ["read", "list", "update"]
-}
-EOF
-```
-новый вариант
 ```
 vault policy write -tls-skip-verify devops-junior - << EOF
 
