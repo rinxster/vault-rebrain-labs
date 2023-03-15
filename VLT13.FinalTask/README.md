@@ -764,7 +764,5 @@ https://www.ibm.com/docs/en/cloud-paks/cp-management/2.1.x?topic=manager-using-v
 
 8. https://developer.hashicorp.com/vault/docs/audit/file
 
-
-9. 
-https://grafana.com/grafana/dashboards/12019-loki-dashboard-quick-search/
+9. https://grafana.com/grafana/dashboards/12019-loki-dashboard-quick-search/
 
